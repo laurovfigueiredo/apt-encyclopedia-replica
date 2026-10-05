@@ -170,3 +170,56 @@ textarea { resize: vertical; }
 .section h2 { border-left: 3px solid var(--cv-red); padding-left: 11px; }
 .tab.active { border-bottom-color: var(--cv-red); }
 .badge { border-color: rgba(191,32,38,.4); }
+
+/* ---------------- TTP Research Knowledge Center ---------------- */
+.kn-card { border-left: 3px solid rgba(191,32,38,.45); }
+.kn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+.kn-provider { background: var(--panel-2); padding: 14px; }
+.kn-provider .row-title a { color: var(--text); text-decoration: none; }
+.kn-provider .row-title a:hover { color: var(--cv-red); }
+.kn-items { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.kn-items li { padding: 5px 0 5px 12px; border-left: 2px solid var(--border); color: var(--muted); }
+.kn-items li:hover { border-left-color: var(--cv-red); color: var(--text); }
+.kn-items a { color: var(--accent); text-decoration: none; }
+.kn-items a:hover { text-decoration: underline; }
+.tag-ok { color: var(--green); text-transform: uppercase; font-size: 10px; letter-spacing: .04em; }
+
+/* ---------------- Lookup by Controls ---------------- */
+.ctl-providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.ctl-group h4 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--cv-red); }
+.ctl-sub { margin-bottom: 12px; }
+.ctl-subname { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-style: italic; }
+.ctl-sub .chips { max-height: none; }
+.chip-count { font-family: "JetBrains Mono", monospace; font-size: 10px; opacity: .6; }
+.chip:has(input:checked) .chip-count { opacity: 1; }
+
+.ctl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ctl-table th, .ctl-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.ctl-table th { position: sticky; top: 0; background: var(--panel-2); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); z-index: 1; }
+.ctl-table td.num, .ctl-table th.num { text-align: right; white-space: nowrap; }
+.ctl-table tbody tr { cursor: pointer; }
+.ctl-table tbody tr:hover { background: rgba(191,32,38,.09); }
+.ctl-table tbody tr:last-child td { border-bottom: 0; }
+#ctl-sorts .btn.active { border-color: var(--cv-red); color: #fff; }
+
+/* ---------------- Knowledge Center ---------------- */
+.res-card { text-decoration: none; display: block; border-left: 3px solid rgba(191,32,38,.45); }
+.res-card:hover { border-color: var(--cv-red); transform: translateY(-2px); }
+.res-card h3 { color: var(--text); }
+.res-card p { margin: 0; }
+
+/* ---------------- adversary selection review ---------------- */
+.review-panel {
+  background: linear-gradient(180deg, var(--cv-pink), #e5b6c0);
+  color: #1a1a1e; border-radius: 12px; padding: 14px 16px; margin: 14px 0;
+}
+.review-panel h3 { margin: 0 0 10px; font-size: 14px; color: #1a1a1e; }
+.review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.review-col h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.review-col ul { list-style: none; margin: 0; padding: 0; max-height: 190px; overflow: auto; font-size: 13px; }
+.review-col li { padding: 3px 0; border-bottom: 1px solid rgba(26,26,30,.12); }
+.review-col .none { font-style: italic; opacity: .7; }
+.review-count { font-family: "JetBrains Mono", monospace; font-weight: 700; }
+.row-check { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.row-check input { accent-color: var(--cv-red); width: 15px; height: 15px; margin: 0; cursor: pointer; }
+.row-check label { font-size: 12px; color: var(--muted); cursor: pointer; user-select: none; }

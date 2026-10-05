@@ -5,11 +5,16 @@ available data. Not affiliated with Cyllex.
 
 ## Sections (all in one page)
 
-- **Overview** — groups tracked, active threats, campaigns, ATT&CK techniques, intel sources
-- **Categorized Threats** — filter adversaries by motive, victim industry and location
+- **Overview** — groups tracked, active threats, campaigns, ATT&CK techniques, intel sources, mapped defensive resources
+- **Categorized Threats** — filter adversaries by motive, victim industry, base and victim location; tick individual adversaries to narrow further, with a live **Selection Review** panel
 - **ATT&CK Navigator Heatmap** — generates an ATT&CK Navigator layer from the selected criteria
+- **Recent Intelligence** — 11 pre-computed adversary report layers
+- **TTP Research Knowledge Center** — all 578 ATT&CK techniques with their mapped policy/process controls, detection rules and offensive tests (D3FEND, CAR, Sigma, Splunk, Elastic, Microsoft Sentinel, Atomic Red Team, Stratus Red Team)
+- **Lookup by Controls** — toggle the 27 control/detection/testing providers you run and align every technique against what your stack actually covers, with sorting and tactic/level filters
+- **Threat Alignment Risk Workflow** — lines the threat model up against the control stack to surface technique-level detection gaps; includes the Trickbot worked example shipped with the Compass
 - **APT Groups** — search + filters (country, threat level, status), click for detail
 - **ATT&CK Techniques** — searchable technique catalog (401 techniques, MITRE ATT&CK v14)
+- **Knowledge Center** — the upstream projects and reference material
 - **Threat Model** — Diamond Model of Intrusion Analysis
 
 ## ATT&CK Navigator heatmap
@@ -35,8 +40,15 @@ python3 -m http.server 8080
 
 Open http://localhost:8080
 
-Data lives in `data/` (`actors.json`, `techniques.json`, `cvc.json`).
-Heatmap logic lives in `heatmap.js`.
+Data lives in `data/`:
+
+- `actors.json`, `techniques.json`, `cvc.json` — encyclopedia data
+- `intel/` — pre-computed report layers, including the Trickbot example
+- `controls.json` — 578 × 27 technique/provider coverage matrix
+- `technique_index.json` — light index (578 techniques, ~300 KB) loaded on boot
+- `technique_pages.json` — full per-technique detail (~2.7 MB), fetched on first open
+
+Heatmap logic lives in `heatmap.js`; the purple-team sections live in `knowledge.js`.
 ## Adversary profile
 
 Clicking **TTPs** on any adversary opens a three-tab modal:

@@ -10,21 +10,29 @@ Promise.all([
   fetch('data/techniques.json').then((r) => r.json()),
   fetch('data/cvc.json').then((r) => r.json()),
   fetch('data/intel/index.json').then((r) => r.json()).catch(() => []),
-]).then(([actors, techs, cvc, intel]) => {
+  fetch('data/technique_index.json').then((r) => r.json()).catch(() => []),
+  fetch('data/controls.json').then((r) => r.json()).catch(() => ({ providers: [], techniques: [] })),
+]).then(([actors, techs, cvc, intel, pages, ctrl]) => {
   ACTORS = actors; TECHS = techs; CVC = cvc; INTEL = intel;
   HEATMAP.cvc = cvc;
   buildCategories(cvc);
+  initKnowledge(pages, ctrl);
+  buildTacticFilters();
+  buildKnowledgeTactics();
   renderStats();
   buildFilters();
   buildHeatmapUI();
   buildIntelUI();
   renderCategories();
+  renderReview();
   renderGroups();
   renderTechs();
   renderSources();
   bind();
+  bindKnowledge();
   renderHeatmap();
   renderIntelList();
+  renderRisk();
 });
 
 /* ---------------- overview ---------------- */
@@ -39,6 +47,9 @@ function renderStats() {
     techniques: TECHS.length,
     sources: sources + '+',
     adversaries: CVC.length,
+    resources: KNOW.index.length
+      ? KNOW.index.reduce((n, p) => n + (p.c || []).reduce((m, v) => m + v, 0), 0).toLocaleString('en-US')
+      : '—',
   };
   $$('[data-stat]').forEach((el) => { el.textContent = vals[el.dataset.stat]; });
 }
@@ -99,11 +110,60 @@ function renderCategories() {
         <div class="tech">${meta}</div>
       </div>
       <div class="row-actions">
+        <div class="row-check">
+          <input type="checkbox" class="adversary_select" data-name="${esc(x.name)}" id="adv-${n}" ${HEATMAP.advSel.has(x.name) ? 'checked' : ''}>
+          <label for="adv-${n}">select</label>
+        </div>
         <button class="btn btn-ghost" data-ttp="${esc(x.mitre || '')}">TTPs</button>
         ${x.url ? `<a class="btn btn-ghost" href="${esc(x.url)}" target="_blank" rel="noopener">Source</a>` : ''}
       </div>
     </div>`;
   }).join('');
+}
+
+/* ---------------- selection review (mirrors the original's pink panel) --- */
+function renderReview() {
+  const box = $('#review');
+  if (!box) return;
+
+  const cats = [...HEATMAP.selected];
+  const advs = [...HEATMAP.advSel];
+
+  // live resolution: individual picks narrow the criteria result further
+  const base = adversariesForScope('criteria', $('#hm-mode').value);
+  const eff = advs.length ? base.filter((x) => advs.includes(x.name)) : base;
+  HEATMAP.effective = eff;
+
+  const catList = cats.length
+    ? cats.map((c) => {
+      const n = (HEATMAP.BY_ID.get(c)?.adversaries || []).length;
+      return `<li>${esc(c)} <span class="muted">(${n})</span></li>`;
+    }).join('')
+    : '<li class="none">no threat categories selected</li>';
+
+  const advList = advs.length
+    ? advs.map((a) => `<li>${esc(a)}</li>`).join('')
+    : '<li class="none">no individual adversaries selected</li>';
+
+  box.innerHTML = `
+    <h3>Selection Review</h3>
+    <div class="review-grid">
+      <div class="review-col">
+        <h4>Threat categories (<span class="review-count">${cats.length}</span>)</h4>
+        <ul>${catList}</ul>
+      </div>
+      <div class="review-col">
+        <h4>Individual adversaries (<span class="review-count">${advs.length}</span>)</h4>
+        <ul>${advList}</ul>
+      </div>
+      <div class="review-col">
+        <h4>Effective scope (<span class="review-count">${eff.length}</span>)</h4>
+        <ul>${eff.length
+    ? eff.slice(0, 60).map((x) => `<li>${esc(x.name)}</li>`).join('')
+    : '<li class="none">nothing selected</li>'}</ul>
+        ${advs.length ? '<p class="tech" style="color:#4a1620;margin-top:8px">Individual picks are narrowing the criteria result.</p>' : ''}
+      </div>
+    </div>`;
 }
 
 /* ---------------- groups ---------------- */
@@ -184,22 +244,36 @@ function currentScope() {
     const cat = HEATMAP.BY_ID.get(catId);
     if (cat) return { adversaries: cat.adversaries, name: cat.id, desc: `All adversaries matching: ${cat.id}`, ids: [cat.id] };
   }
+
+  // the Trickbot example layer ships with the Compass as a worked risk scenario
+  if (scope === 'example' && HEATMAP.example?.layer) {
+    return {
+      adversaries: [{ name: HEATMAP.example.name, ttps: HEATMAP.example.techniques }],
+      name: HEATMAP.example.name,
+      desc: `Example threat scope from the Control Validation Compass. Score = 1 for each technique attributed to ${HEATMAP.example.name}.`,
+      ids: [],
+      raw: HEATMAP.example.layer,
+    };
+  }
+
   const adv = adversariesForScope(scope, mode);
+  // individual picks narrow the criteria result, same as the original's checkboxes
+  const narrowed = HEATMAP.advSel.size ? adv.filter((x) => HEATMAP.advSel.has(x.name)) : adv;
   const ids = selectedCategoryIds();
   const label = ids.length ? ids.join(' + ') : 'All adversaries';
   const name = scope === 'adversary' && !HEATMAP.selectedAdversary ? 'Select an adversary' : label;
   return {
-    adversaries: adv,
+    adversaries: narrowed,
     name,
-    desc: `Threat actor heatmap for ${adv.length} adversar${adv.length === 1 ? 'y' : 'ies'} in scope. Score = number of adversaries using the technique.`,
+    desc: `Threat actor heatmap for ${narrowed.length} adversar${narrowed.length === 1 ? 'y' : 'ies'} in scope. Score = number of adversaries using the technique.`,
     ids,
   };
 }
 
 function renderHeatmap() {
-  const { adversaries, name, desc } = currentScope();
+  const { adversaries, name, desc, raw } = currentScope();
   const counts = tally(adversaries);
-  const layer = buildLayer(name, desc, counts);
+  const layer = raw || buildLayer(name, desc, counts);
   HEATMAP.current = { layer, adversaries, name };
 
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
@@ -512,18 +586,30 @@ function bind() {
     $$('#categorized input[type=checkbox]').forEach((c) => (c.checked = false));
     Object.values(CAT).forEach((s) => s.clear());
     clearCriteria();
+    HEATMAP.advSel.clear();
     renderCategories();
+    renderReview();
     renderHeatmap();
+    renderRisk();
   });
   $('#cat-list').addEventListener('click', (e) => {
     const b = e.target.closest('[data-ttp]');
     if (b) openTtpPanel(b.dataset.ttp);
   });
+  $('#cat-list').addEventListener('change', (e) => {
+    const b = e.target.closest('.adversary_select');
+    if (!b) return;
+    const name = b.dataset.name;
+    b.checked ? HEATMAP.advSel.add(name) : HEATMAP.advSel.delete(name);
+    renderReview();
+    renderHeatmap();
+    renderRisk();
+  });
 
-  $('#hm-render').addEventListener('click', renderHeatmap);
-  $('#hm-scope').addEventListener('change', renderHeatmap);
-  $('#hm-mode').addEventListener('change', renderHeatmap);
-  $('#hm-category').addEventListener('change', renderHeatmap);
+  $('#hm-render').addEventListener('click', () => { renderHeatmap(); renderRisk(); });
+  $('#hm-scope').addEventListener('change', () => { renderHeatmap(); renderRisk(); });
+  $('#hm-mode').addEventListener('change', () => { renderHeatmap(); renderRisk(); renderReview(); });
+  $('#hm-category').addEventListener('change', () => { renderHeatmap(); renderRisk(); });
   $('#hm-copy').addEventListener('click', async () => {
     const t = $('#hm-json');
     try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand('copy'); }
@@ -576,7 +662,9 @@ function toggle(e, group) {
   e.target.checked ? CAT[group].add(v) : CAT[group].delete(v);
   setCriterionSelected(v, e.target.checked);
   renderCategories();
+  renderReview();
   renderHeatmap();
+  renderRisk();
 }
 
 function flash(btn, msg) {

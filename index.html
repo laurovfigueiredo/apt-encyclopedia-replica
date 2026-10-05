@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 
@@ -20,9 +20,12 @@
       <a href="#categorized">Categorized Threats</a>
       <a href="#navigator">ATT&amp;CK Heatmap</a>
       <a href="#intel">Recent Intelligence</a>
+      <a href="#knowledge">TTP Research &amp; Search</a>
+      <a href="#controls">Lookup by Controls</a>
+      <a href="#risk">Threat Alignment</a>
+      <a href="#resources">Knowledge Center</a>
       <a href="#groups">APT Groups</a>
       <a href="#techniques">ATT&CK</a>
-      <a href="#search">Advanced Search</a>
       <a href="#model">Threat Model</a>
     </nav>
   </div>
@@ -39,12 +42,15 @@
       <div class="card stat"><div class="meta">ATT&CK Techniques</div><div class="stat-num" data-stat="techniques">—</div></div>
       <div class="card stat"><div class="meta">Intelligence Sources</div><div class="stat-num" data-stat="sources">—</div></div>
       <div class="card stat"><div class="meta">Categorized Adversaries</div><div class="stat-num" data-stat="adversaries">—</div></div>
+      <div class="card stat"><div class="meta">Defensive Controls Mapped</div><div class="stat-num" data-stat="resources">—</div></div>
     </div>
   </section>
 
   <section id="categorized" class="section">
     <h2>Categorized Threats <span class="muted">(Motive, Location, Industry)</span></h2>
-    <p class="tech">Choose one or multiple criteria, then select a single adversary or threat category from the list. Selecting multiple criteria narrows the search.</p>
+    <p class="tech">Choose one or multiple criteria, then select a single adversary or threat category from the list. Selecting multiple criteria narrows the search.
+      Tick <b>select</b> next to individual adversaries to narrow it further.
+      <a href="https://youtu.be/fcFN1wxaihA" target="_blank" rel="noopener">Watch the feature tutorial ↗</a></p>
 
     <div class="filters">
       <details class="filter-box" open>
@@ -78,9 +84,17 @@
       <span class="stats">Or, select a relevant adversary / grouping from the following <b id="cat-total">0</b> option(s):</span>
     </div>
 
+    <div class="review-panel" id="review"></div>
+
     <div class="card">
       <div id="cat-list" class="listbox"></div>
     </div>
+
+    <p class="tech" style="margin-top:12px">
+      Tick <b>select</b> on individual adversaries to narrow the result further — the panel above
+      recomputes the effective scope live. Learn the workflow in the
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">Control Validation Compass source ↗</a>.
+    </p>
   </section>
 
   <section id="intel" class="section">
@@ -123,6 +137,7 @@
         <select id="hm-scope">
           <option value="criteria">Critérios selecionados</option>
           <option value="adversary">Adversário selecionado (via botão TTP)</option>
+          <option value="example">Exemplo Trickbot (risk workflow)</option>
         </select>
       </label>
       <label class="field">
@@ -181,6 +196,96 @@
     <div id="tech-grid" class="grid"></div>
   </section>
 
+  <section id="knowledge" class="section">
+    <h2>TTP Research Knowledge Center <span class="muted" id="kn-count"></span></h2>
+    <p class="tech">Every ATT&amp;CK technique documented with its mapped <b>policy / process controls</b>, <b>detection rules</b> and <b>offensive tests</b> — the purple-team reference layer behind the threat model above. Coverage of D3FEND, CAR, Sigma, Splunk, Elastic, Microsoft Sentinel &amp; Defender, Atomic Red Team and Stratus Red Team.</p>
+
+    <div class="stats-bar" id="kn-stats"></div>
+
+    <div class="toolbar">
+      <label class="field" style="flex:1;min-width:260px">
+        <span>Search</span>
+        <input id="kn-q" type="search" placeholder="Technique ID, name, tactic or description..." autocomplete="off">
+      </label>
+      <label class="field"><span>Tactic</span><select id="kn-tactic"><option value="">All tactics</option></select></label>
+      <label class="field"><span>Has mapped content</span>
+        <select id="kn-has">
+          <option value="">Any</option>
+          <option value="policy">Policy / process controls</option>
+          <option value="detection">Detection rules</option>
+          <option value="test">Offensive tests</option>
+          <option value="none">Nothing mapped yet</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="grid" id="kn-list"></div>
+  </section>
+
+  <section id="controls" class="section">
+    <h2>Lookup by Controls</h2>
+    <p class="tech">Toggle the controls and testing capabilities you run in your environment. The alignment below maps every ATT&amp;CK technique to what your selected stack actually covers, so you can see where you are blind before an adversary does.</p>
+
+    <div class="toolbar">
+      <button class="btn btn-ghost" id="ctl-uncheck">Uncheck all boxes</button>
+      <button class="btn btn-ghost" id="ctl-check">Check all boxes</button>
+      <span class="stats" id="ctl-summary"></span>
+    </div>
+
+    <div class="card">
+      <div id="ctl-providers" class="ctl-providers"></div>
+    </div>
+
+    <details class="filter-box" style="margin-top:16px">
+      <summary>Advanced options — further refine the techniques covered</summary>
+      <div class="toolbar">
+        <label class="chip"><input type="checkbox" id="ctl-lowest"><span>'Lowest-level' techniques only</span></label>
+      </div>
+      <div class="meta" style="margin:10px 0 4px">Tactics</div>
+      <div class="chips" id="ctl-tactics"></div>
+    </details>
+
+    <details class="filter-box" style="margin-top:14px">
+      <summary>Sort the output</summary>
+      <div class="toolbar" id="ctl-sorts">
+        <button class="btn btn-ghost" data-sort="asc:total">Low to high — Controls &amp; Tests</button>
+        <button class="btn btn-ghost" data-sort="asc:policy">Low to high — Policy/Process</button>
+        <button class="btn btn-ghost" data-sort="asc:detect">Low to high — Rules</button>
+        <button class="btn btn-ghost" data-sort="asc:test">Low to high — Tests</button>
+        <button class="btn btn-ghost active" data-sort="desc:total">High to low — Controls &amp; Tests</button>
+        <button class="btn btn-ghost" data-sort="desc:policy">High to low — Policy/Process</button>
+        <button class="btn btn-ghost" data-sort="desc:detect">High to low — Rules</button>
+        <button class="btn btn-ghost" data-sort="desc:test">High to low — Tests</button>
+        <button class="btn btn-ghost" data-sort="asc:id">Identifier</button>
+      </div>
+      <div class="toolbar"><button class="btn" id="ctl-apply">Show Me the Mappings!</button></div>
+    </details>
+
+    <div class="card" id="ctl-head" style="padding:12px 14px;margin:14px 0"></div>
+    <div id="ctl-out" style="overflow:auto;max-height:640px"></div>
+
+    <p class="tech" style="margin-top:14px">
+      MITRE ATT&amp;CK® and MITRE D3FEND are registered trademarks of The MITRE Corporation.
+      Raw data: <a href="data/controls.json" target="_blank" rel="noopener">controls.json</a> ·
+      <a href="data/technique_pages.json" target="_blank" rel="noopener">technique pages</a>
+    </p>
+  </section>
+
+  <section id="risk" class="section">
+    <h2>Threat Alignment Risk Workflow</h2>
+    <p class="tech">Line up the threat model above against the control stack below to expose exactly where detection is missing.
+      <button class="btn btn-ghost" id="risk-trickbot">Line It Up! — start from the Trickbot example</button></p>
+
+    <div id="risk-summary"></div>
+    <div id="risk-out" style="overflow:auto;max-height:640px"></div>
+  </section>
+
+  <section id="resources" class="section">
+    <h2>Knowledge Center</h2>
+    <p class="tech">The upstream projects and reference material this tool draws on.</p>
+    <div class="grid" id="res-list"></div>
+  </section>
+
   <section id="model" class="section">
     <h2>Threat Model</h2>
 
@@ -229,7 +334,11 @@
       <a href="data/techniques.json" target="_blank" rel="noopener">techniques (json)</a> ·
       <a href="data/actors.json" target="_blank" rel="noopener">groups (json)</a> ·
       <a href="https://raw.githubusercontent.com/ControlCompass/ControlCompass.github.io/main/Control_Validation_Compass.csv" target="_blank" rel="noopener">Control Validation Compass (csv)</a> ·
-      <a href="data/intel/index.json" target="_blank" rel="noopener">intel layers index</a>
+      <a href="data/intel/index.json" target="_blank" rel="noopener">intel layers index</a> ·
+      <a href="https://github.com/tropChaud/webpage2attack" target="_blank" rel="noopener">TTP heatmap generator script</a> ·
+      <a href="data/controls.json" target="_blank" rel="noopener">controls matrix (json)</a> ·
+      <a href="data/technique_index.json" target="_blank" rel="noopener">technique index (json)</a> ·
+      <a href="data/technique_pages.json" target="_blank" rel="noopener">technique pages (json)</a>
     </p>
     <p class="tech">
       <b>Upstream:</b>
@@ -242,6 +351,7 @@
 </footer>
 
 <script src="heatmap.js?v=2"></script>
+<script src="knowledge.js?v=1"></script>
 <script src="spa.js?v=22"></script>
 </body>
 </html>

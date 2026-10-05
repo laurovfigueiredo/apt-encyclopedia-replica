@@ -15,6 +15,8 @@ const HEATMAP = {
   BY_ID: new Map(),
   cvc: [],
   selected: new Set(), // category ids currently ticked in the filter panel
+  advSel: new Set(),   // adversary names ticked individually in the list
+  effective: [],       // adversaries left after individual picks narrow the criteria
   current: null,          // {layer, adversaries, name}
   selectedAdversary: '',  // mitre slug chosen via the "TTPs" button
 };
