@@ -66,6 +66,10 @@ input[type=text]:focus, select:focus { outline: none; border-color: var(--accent
 .btn:hover { border-color: var(--accent); }
 .btn-ghost { padding: 4px 9px; font-size: 12px; }
 .stats { color: var(--muted); font-size: 13px; }
+.tag-warn { color: var(--warn, #ffb454); text-transform: uppercase; font-size: 10px; letter-spacing: .04em; }
+.field { display: inline-flex; flex-direction: column; gap: 4px; }
+.field > span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+textarea { resize: vertical; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 

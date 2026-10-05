@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
 
@@ -18,6 +18,7 @@
     <nav class="nav">
       <a href="#overview">Overview</a>
       <a href="#categorized">Categorized Threats</a>
+      <a href="#navigator">ATT&amp;CK Heatmap</a>
       <a href="#groups">APT Groups</a>
       <a href="#techniques">ATT&CK</a>
       <a href="#search">Advanced Search</a>
@@ -70,6 +71,50 @@
     <div class="card">
       <div id="cat-list" class="listbox"></div>
     </div>
+  </section>
+
+  <section id="navigator" class="section">
+    <h2>ATT&amp;CK Navigator Heatmap</h2>
+    <p class="tech">Layer ATT&amp;CK gerada a partir dos critérios selecionados acima. O <b>score</b> de cada técnica é a quantidade de adversários do escopo que a utilizam — mesmo modelo de pontuação dos heatmaps do Control Validation Compass.</p>
+
+    <div class="toolbar">
+      <label class="field">
+        <span>Escopo</span>
+        <select id="hm-scope">
+          <option value="criteria">Critérios selecionados</option>
+          <option value="adversary">Adversário selecionado (via botão TTP)</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Combinação</span>
+        <select id="hm-mode">
+          <option value="union">União (qualquer critério)</option>
+          <option value="intersect">Interseção (todos os critérios)</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Categoria inteira</span>
+        <select id="hm-category"></select>
+      </label>
+      <button class="btn" id="hm-render">Gerar heatmap</button>
+      <button class="btn btn-ghost" id="hm-copy">Copiar JSON</button>
+      <button class="btn btn-ghost" id="hm-download">Baixar layer</button>
+      <button class="btn btn-ghost" id="hm-open">Abrir no Navigator</button>
+    </div>
+
+    <div id="hm-meta" class="card" style="padding:12px 14px;margin-bottom:14px"></div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <iframe id="hm-frame" title="ATT&CK Navigator" width="100%" height="760"
+              style="border:0;display:block;background:#fff"
+              src="https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack"></iframe>
+    </div>
+
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:600">ATT&amp;CK Navigator Layer (JSON)</summary>
+      <textarea id="hm-json" rows="14" readonly spellcheck="false"
+                style="width:100%;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;background:#141418;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px"></textarea>
+    </details>
   </section>
 
   <section id="groups" class="section">
@@ -137,6 +182,7 @@
   </div>
 </footer>
 
-<script src="spa.js?v=20"></script>
+<script src="heatmap.js?v=1"></script>
+<script src="spa.js?v=21"></script>
 </body>
 </html>

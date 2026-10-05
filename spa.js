@@ -11,13 +11,17 @@ Promise.all([
   fetch('data/cvc.json').then((r) => r.json()),
 ]).then(([actors, techs, cvc]) => {
   ACTORS = actors; TECHS = techs; CVC = cvc;
+  HEATMAP.cvc = cvc;
+  buildCategories(cvc);
   renderStats();
   buildFilters();
+  buildHeatmapUI();
   renderCategories();
   renderGroups();
   renderTechs();
   renderSources();
   bind();
+  renderHeatmap();
 });
 
 /* ---------------- overview ---------------- */
@@ -53,7 +57,7 @@ function buildFilters() {
   $('#groups-country').innerHTML = '<option value="">All countries</option>' + gc.map((c) => `<option>${esc(c)}</option>`).join('');
   const gt = uniq(ACTORS.map((a) => a.threatLevel));
   $('#groups-threat').innerHTML = '<option value="">All threat levels</option>' + gt.map((c) => `<option>${esc(c)}</option>`).join('');
-  const tac = uniq(TECHS.map((t) => t.tactic));
+  const tac = uniq(TECHS.map((t) => t.tactic).filter(Boolean));
   $('#tech-tactic').innerHTML = '<option value="">All tactics</option>' + tac.map((c) => `<option>${esc(c)}</option>`).join('');
 }
 
@@ -133,7 +137,7 @@ function renderTechs() {
   const tac = $('#tech-tactic').value;
 
   const res = TECHS.filter((t) => {
-    const hay = [t.id, t.name, t.tactic, (t.groups || []).join(' ')].join(' ').toLowerCase();
+    const hay = [t.id, t.name, t.tactic, (t.tactics || []).join(' '), (t.platforms || []).join(' '), (t.groups || []).join(' ')].join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
     if (tac && t.tactic !== tac) return false;
     return true;
@@ -143,10 +147,75 @@ function renderTechs() {
   $('#tech-grid').innerHTML = res.map((t) => `
     <article class="card">
       <h3><span class="mono">${esc(t.id)}</span> ${esc(t.name || '')}</h3>
-      ${t.tactic ? `<div class="meta">Tactic: ${esc(t.tactic)}</div>` : ''}
+      <div class="meta">
+        ${t.tactic ? `Tactic: ${esc(t.tactic)}` : 'Tactic: —'}
+        ${t.status && t.status !== 'active' ? ` · <span class="tag-warn">${esc(t.status)}</span>` : ''}
+        · <a href="${esc(t.url)}" target="_blank" rel="noopener">attack.mitre.org</a>
+      </div>
       ${t.groups?.length ? `<div class="badges">${t.groups.slice(0, 6).map((g) => `<span class="badge">${esc(g)}</span>`).join('')}${t.groups.length > 6 ? `<span class="badge">+${t.groups.length - 6}</span>` : ''}</div>` : ''}
       ${t.description || t.usage ? `<div class="tech clamp">${esc(t.description || t.usage)}</div>` : ''}
     </article>`).join('') || '<p class="muted">No techniques match the filters.</p>';
+}
+
+/* ---------------- ATT&CK Navigator heatmap ---------------- */
+const TYPE_LABEL = { motive: 'Motive', industry: 'Industry', base: 'Adversary Base', victim: 'Victim Location' };
+
+function buildHeatmapUI() {
+  const sel = $('#hm-category');
+  const groups = { motive: [], industry: [], base: [], victim: [] };
+  HEATMAP.CATS.forEach((c) => groups[c.type].push(c));
+  sel.innerHTML = '<option value="">— usar os critérios marcados acima —</option>' +
+    Object.entries(groups).map(([type, list]) => !list.length ? '' :
+      `<optgroup label="${TYPE_LABEL[type]} (${list.length})">` +
+      list.map((c) => `<option value="${esc(c.id)}">${esc(c.id)} — ${c.adversaries.length} adv</option>`).join('') +
+      '</optgroup>').join('');
+}
+
+function currentScope() {
+  const scope = $('#hm-scope').value;
+  const mode = $('#hm-mode').value;
+  const catId = $('#hm-category').value;
+  if (catId) {
+    const cat = HEATMAP.BY_ID.get(catId);
+    if (cat) return { adversaries: cat.adversaries, name: cat.id, desc: `All adversaries matching: ${cat.id}`, ids: [cat.id] };
+  }
+  const adv = adversariesForScope(scope, mode);
+  const ids = selectedCategoryIds();
+  const label = ids.length ? ids.join(' + ') : 'All adversaries';
+  const name = scope === 'adversary' && !HEATMAP.selectedAdversary ? 'Select an adversary' : label;
+  return {
+    adversaries: adv,
+    name,
+    desc: `Threat actor heatmap for ${adv.length} adversar${adv.length === 1 ? 'y' : 'ies'} in scope. Score = number of adversaries using the technique.`,
+    ids,
+  };
+}
+
+function renderHeatmap() {
+  const { adversaries, name, desc } = currentScope();
+  const counts = tally(adversaries);
+  const layer = buildLayer(name, desc, counts);
+  HEATMAP.current = { layer, adversaries, name };
+
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const nameOf = (id) => TECHS.find((t) => t.id === id)?.name || '';
+  const empty = adversaries.length === 0;
+
+  $('#hm-meta').innerHTML = `
+    <div class="row-main">
+      <div class="row-title">${esc(layer.name)}</div>
+      <div class="tech">${empty
+      ? '<span class="tag-warn">escopo vazio</span> — marque critérios acima ou escolha uma categoria'
+      : `${adversaries.length} adversários no escopo · <b>${layer.techniques.length}</b> técnicas distintas · score máximo <b>${layer.gradient.maxValue}</b>`}</div>
+    </div>
+    <div class="badges" style="margin-top:10px">
+      ${top.map(([id, s]) => `<span class="badge" title="${esc(nameOf(id))}">${esc(id)} · ${s}</span>`).join('') || '<span class="muted">—</span>'}
+    </div>`;
+
+  $('#hm-json').value = JSON.stringify(layer, null, 2);
+  $('#hm-frame').src = empty
+    ? 'https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack'
+    : navigatorUrl(layer);
 }
 
 /* ---------------- sources ---------------- */
@@ -168,6 +237,8 @@ function openGroup(id) {
   if (!a) return;
   const dm = a.diamondModel || {};
   const refs = a.reports || [];
+  const counts = tally([a]);
+  const layer = buildLayer(a.name, `Techniques attributed to ${a.name}.`, counts);
   $('#modal-body').innerHTML = `
     <h2>${esc(a.name)}</h2>
     <div class="meta">${a.mitreId ? `MITRE: ${esc(a.mitreId)} · ` : ''}${a.country ? `Country: ${esc(a.country)} · ` : ''}Threat: ${esc(a.threatLevel || '—')} · ${a.active ? 'Active' : 'Inactive'}</div>
@@ -196,7 +267,11 @@ function openGroup(id) {
     </div>
 
     <h3 class="mt">Techniques (${(a.techniques || []).length})</h3>
-    <div class="techlist">
+    <div class="card" style="padding:0;overflow:hidden;margin-top:10px">
+      <iframe title="ATT&CK Navigator" width="100%" height="620" style="border:0;display:block;background:#fff"
+        src="${esc(navigatorUrl(layer))}"></iframe>
+    </div>
+    <div class="techlist" style="margin-top:12px">
       ${(a.techniques || []).map((t) => `<div class="techitem">
           <div class="mono">${esc(t.id)}</div>
           <div><b>${esc(t.name || '')}</b>${t.tactic ? ` <span class="tech">· ${esc(t.tactic)}</span>` : ''}</div>
@@ -214,17 +289,32 @@ function openGroup(id) {
 function openTtpPanel(mitreName) {
   const x = CVC.find((c) => (c.mitre || '').toLowerCase() === (mitreName || '').toLowerCase());
   const list = x?.ttps || [];
+  HEATMAP.selectedAdversary = x?.mitre || '';
+
+  // layer for this adversary
+  const counts = tally(x ? [x] : []);
+  const layer = buildLayer(x?.name || mitreName || 'TTPs',
+    `Adversary-specific layer. Score = 1 when the adversary is attributed to the technique.`, counts);
+
   $('#modal-body').innerHTML = `
     <h2>${esc(x?.name || mitreName || 'TTPs')}</h2>
     <div class="meta">${list.length} techniques mapped</div>
+    <div class="badges">${(x?.motivation || []).map((m) => `<span class="badge">${esc(m)}</span>`).join('')}${(x?.industries || []).slice(0, 6).map((m) => `<span class="badge">${esc(m)}</span>`).join('')}</div>
+
+    <h3 class="mt">ATT&amp;CK Navigator Layer</h3>
+    <div class="card" style="padding:0;overflow:hidden;margin-top:10px">
+      <iframe title="ATT&CK Navigator" width="100%" height="620" style="border:0;display:block;background:#fff"
+        src="${esc(navigatorUrl(layer))}"></iframe>
+    </div>
+
+    <h3 class="mt">Technique list</h3>
     <div class="techlist">
       ${list.map((t) => {
         const id = typeof t === 'string' ? t : (t.technique_id || t.id || '');
-        const nm = typeof t === 'string' ? (TECHS.find((z) => z.id === t)?.name || '') : (t.technique || t.name || '');
-        const tc = typeof t === 'string' ? (TECHS.find((z) => z.id === t)?.tactic || '') : (t.tactic || '');
+        const meta = TECHS.find((z) => z.id === id);
         return `<div class="techitem">
         <div class="mono">${esc(id)}</div>
-        <div><b>${esc(nm)}</b>${tc ? ` <span class="tech">· ${esc(tc)}</span>` : ''}</div>
+        <div><b>${esc(meta?.name || (typeof t === 'string' ? '' : (t.technique || t.name || '')))}</b>${meta?.tactic ? ` <span class="tech">· ${esc(meta.tactic)}</span>` : ''}</div>
       </div>`;
       }).join('') || '<p class="muted">No TTP data available.</p>'}
     </div>
@@ -232,6 +322,9 @@ function openTtpPanel(mitreName) {
   `;
   $('#modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  $('#hm-scope').value = 'adversary';
+  renderHeatmap();
 }
 
 function closeModal() {
@@ -249,11 +342,31 @@ function bind() {
     $$('#categorized input[type=checkbox]').forEach((c) => (c.checked = false));
     Object.values(CAT).forEach((s) => s.clear());
     renderCategories();
+    renderHeatmap();
   });
   $('#cat-list').addEventListener('click', (e) => {
     const b = e.target.closest('[data-ttp]');
     if (b) openTtpPanel(b.dataset.ttp);
   });
+
+  $('#hm-render').addEventListener('click', renderHeatmap);
+  $('#hm-scope').addEventListener('change', renderHeatmap);
+  $('#hm-mode').addEventListener('change', renderHeatmap);
+  $('#hm-category').addEventListener('change', renderHeatmap);
+  $('#hm-copy').addEventListener('click', async () => {
+    const t = $('#hm-json');
+    try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand('copy'); }
+    flash($('#hm-copy'), 'Copiado!');
+  });
+  $('#hm-download').addEventListener('click', () => {
+    const blob = new Blob([$('#hm-json').value], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(HEATMAP.current?.name || 'layer').replace(/[^\w.-]+/g, '_')}_attack_layer.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $('#hm-open').addEventListener('click', () => window.open(navigatorUrl(HEATMAP.current.layer), '_blank', 'noopener'));
 
   $('#groups-q').addEventListener('input', renderGroups);
   ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => $(s).addEventListener('change', renderGroups));
@@ -279,4 +392,11 @@ function toggle(e, group) {
   const v = e.target.value;
   e.target.checked ? CAT[group].add(v) : CAT[group].delete(v);
   renderCategories();
+  renderHeatmap();
+}
+
+function flash(btn, msg) {
+  const old = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(() => (btn.textContent = old), 1200);
 }
