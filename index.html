@@ -1,37 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APT Encyclopedia - Replica</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APT Encyclopedia — Cyllex Replica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
-  <header class="header">
-    <div class="container">
-      <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
-      <p class="sub">Replica with public data extracted from cyllex.io/encyclopedia</p>
-      <nav style="margin-top:12px">
-        <a href="attack.html">ATT&CK Techniques</a> · <a href="index.html">APT Groups</a> · <a href="search.html">Advanced Search</a>
-      </nav>
+
+<header class="header">
+  <div class="container">
+    <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
+    <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model — single page.</p>
+    <nav class="nav">
+      <a href="#overview">Overview</a>
+      <a href="#categorized">Categorized Threats</a>
+      <a href="#groups">APT Groups</a>
+      <a href="#techniques">ATT&CK</a>
+      <a href="#search">Advanced Search</a>
+      <a href="#model">Threat Model</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="overview" class="section">
+    <h2>Overview</h2>
+    <div class="stats-bar" id="stats-bar">
+      <div class="card stat"><div class="meta">Groups Tracked</div><div class="stat-num" data-stat="groups">—</div></div>
+      <div class="card stat"><div class="meta">Active Threats</div><div class="stat-num" data-stat="active">—</div></div>
+      <div class="card stat"><div class="meta">Total Campaigns</div><div class="stat-num" data-stat="campaigns">—</div></div>
+      <div class="card stat"><div class="meta">ATT&CK Techniques</div><div class="stat-num" data-stat="techniques">—</div></div>
+      <div class="card stat"><div class="meta">Intelligence Sources</div><div class="stat-num" data-stat="sources">—</div></div>
+      <div class="card stat"><div class="meta">Categorized Adversaries</div><div class="stat-num" data-stat="adversaries">—</div></div>
     </div>
-  </header>
-  <main class="container">
-    <div class="stats-bar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0 24px">
-      <div class="card" style="padding:12px"><div class="meta">Groups Tracked</div><div style="font-size:28px;font-weight:700;margin-top:4px">58</div></div>
-      <div class="card" style="padding:12px"><div class="meta">Active Threats</div><div style="font-size:28px;font-weight:700;margin-top:4px">52</div></div>
-      <div class="card" style="padding:12px"><div class="meta">Total Campaigns</div><div style="font-size:28px;font-weight:700;margin-top:4px">915</div></div>
-      <div class="card" style="padding:12px"><div class="meta">Intelligence Sources</div><div style="font-size:28px;font-weight:700;margin-top:4px">263+</div></div>
+  </section>
+
+  <section id="categorized" class="section">
+    <h2>Categorized Threats <span class="muted">(Motive, Location, Industry)</span></h2>
+    <p class="tech">Choose one or multiple criteria, then select a single adversary or threat category from the list. Selecting multiple criteria narrows the search.</p>
+
+    <div class="filters">
+      <details class="filter-box" open>
+        <summary>Lookup by adversary motive</summary>
+        <div class="chips" id="f-motive"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by victim industry</summary>
+        <div class="chips" id="f-industry"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by adversary or victim location</summary>
+        <div class="chips" id="f-country"></div>
+      </details>
     </div>
-    <div class="controls">
-      <input type="text" id="search" placeholder="Search by name, alias, ID..." autocomplete="off">
-      <div class="stats">Showing <span id="count">0</span> groups</div>
+
+    <div class="toolbar">
+      <input type="text" id="cat-q" placeholder="Filter adversary list..." autocomplete="off">
+      <button class="btn" id="cat-clear">Clear all criteria</button>
+      <span class="stats">Or, select a relevant adversary / grouping from the following <b id="cat-total">0</b> option(s):</span>
     </div>
-    <div id="grid" class="grid"></div>
-  </main>
-  <script src="app.js"></script>
+
+    <div class="card">
+      <div id="cat-list" class="listbox"></div>
+    </div>
+  </section>
+
+  <section id="groups" class="section">
+    <h2>APT Groups <span class="muted" id="groups-count"></span></h2>
+    <div class="toolbar">
+      <input type="text" id="groups-q" placeholder="Search group by name, alias, malware, country..." autocomplete="off">
+      <select id="groups-country"><option value="">All countries</option></select>
+      <select id="groups-threat"><option value="">All threat levels</option></select>
+      <select id="groups-status">
+        <option value="">Any status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <div id="groups-grid" class="grid"></div>
+  </section>
+
+  <section id="techniques" class="section">
+    <h2>MITRE ATT&CK Techniques <span class="muted" id="tech-count"></span></h2>
+    <div class="toolbar">
+      <input type="text" id="tech-q" placeholder="Search technique ID, name, tactic or group..." autocomplete="off">
+      <select id="tech-tactic"><option value="">All tactics</option></select>
+    </div>
+    <div id="tech-grid" class="grid"></div>
+  </section>
+
+  <section id="model" class="section">
+    <h2>Threat Model</h2>
+
+    <div class="card">
+      <h3>Diamond Model of Intrusion Analysis</h3>
+      <p class="tech">Caltagirone, Pendergast &amp; Betz (2013): an intrusion is an event in which an adversary uses a capability over infrastructure against a victim. Every group profile below maps to these four features.</p>
+      <div class="diamond">
+        <div class="dcell d-adv"><h4>Adversary</h4><p>Who is behind the attack — actor, aliases, attribution, country.</p></div>
+        <div class="dcell d-cap"><h4>Capability</h4><p>What they use — techniques, malware, sophistication level.</p></div>
+        <div class="dcell d-inf"><h4>Infrastructure</h4><p>How they communicate — C2, domains, IPs, services.</p></div>
+        <div class="dcell d-vic"><h4>Victim</h4><p>Who is targeted — sectors, industries, geography.</p></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>ATT&amp;CK Mapping</h3>
+      <p class="tech">Each group carries observed TTPs with tactic, technique ID (Txxxx), name and contextual usage where available — see the Diamond Model block on any group detail.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Intelligence Sources</h3>
+      <p class="tech">Profiles aggregate open-source intelligence from vendor reports, government advisories and community sources to support threat hunting and detection engineering.</p>
+      <div id="sources-list" class="sources"></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <span class="tech">Replica built from public data extracted from cyllex.io/encyclopedia. Not affiliated with Cyllex.</span>
+  </div>
+</footer>
+
+<script src="spa.js?v=20"></script>
 </body>
 </html>
