@@ -13,44 +13,22 @@
   <header class="header">
     <div class="container">
       <h1 class="logo"><a href="index.html" style="color:inherit;text-decoration:none">←</a> Cyllex <span class="muted">Categorized Threats</span></h1>
-      <p class="sub">Motive, Location, Industry + Full Adversary List</p>
-      <nav style="margin-top:12px">
-        <a href="threat-model.html">Threat Model</a> · <a href="threat-categorized.html">Categorized</a>
-      </nav>
     </div>
   </header>
   <main class="container">
     <div class="card" style="margin:18px 0;padding:16px">
       <details open>
-        <summary style="cursor:pointer;font-weight:600">Select an entire threat category</summary>
-        <div style="margin-top:12px;max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:10px;background:#1b1b1f">
-          <div id="adversary-all" class="tech" style="line-height:1.9"></div>
+        <summary style="cursor:pointer;font-weight:600;font-size:18px">Select an entire threat category</summary>
+        <div style="margin-top:12px;max-height:500px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:#1b1b1f">
+          <div id="adversary-all" class="tech" style="line-height:2"></div>
         </div>
       </details>
     </div>
-    <div class="card" style="margin:18px 0;padding:16px">
-      <h3>Filter by criteria</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:12px">
-        <div>
-          <h4>Adversary Motive</h4>
-          <div id="motives" style="max-height:220px;overflow:auto;margin-top:8px"></div>
-        </div>
-        <div>
-          <h4>Victim Industry</h4>
-          <div id="industries" style="max-height:220px;overflow:auto;margin-top:8px"></div>
-        </div>
-        <div>
-          <h4>Location</h4>
-          <div id="countries" style="max-height:220px;overflow:auto;margin-top:8px"></div>
-        </div>
-      </div>
-      <div style="margin-top:12px"><button id="clear" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 12px;cursor:pointer">Clear Filters</button></div>
-    </div>
     <div class="card" style="padding:16px">
       <h3>Matching Adversaries (<span id="count">0</span>)</h3>
-      <div id="list" style="margin-top:12px"></div>
+      <div class="meta">Use filters below</div>
     </div>
   </main>
-  <script src="threat-categorized-full.js?v=1"></script>
+  <script src="threat-categorized.js?v=3"></script>
 </body>
 </html>
