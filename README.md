@@ -37,3 +37,15 @@ Open http://localhost:8080
 
 Data lives in `data/` (`actors.json`, `techniques.json`, `cvc.json`).
 Heatmap logic lives in `heatmap.js`.
+## Adversary profile
+
+Clicking **TTPs** on any adversary opens a three-tab modal:
+
+- **ATT&CK Heatmap** — the adversary's Navigator layer plus the full technique list
+- **Adversary Profile** — the ETDA threat description, ATT&CK and ETDA profile links,
+  and a fact table (aliases, adversary base, motives, victim industries and countries,
+  first seen, ATT&CK last modified)
+- **Diamond Model** — the modified Diamond Model of Intrusion Analysis diagram
+
+The 117 Diamond Model diagrams are the SVG files published with the Control Validation
+Compass data, used here under the same terms as the rest of that dataset.

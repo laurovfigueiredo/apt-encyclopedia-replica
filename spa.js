@@ -286,6 +286,45 @@ function openGroup(id) {
   document.body.style.overflow = 'hidden';
 }
 
+/* ---------------- adversary profile: Diamond Model + ETDA metadata ---- */
+function diamondBlock(x) {
+  if (!x?.diamond) {
+    return `<p class="muted">No Diamond Model graphic for this adversary.</p>`;
+  }
+  const alt = `${x.name} Diamond Model`;
+  return `
+    <div class="diamond-wrap">
+      <img src="${esc(x.diamond)}" alt="${esc(alt)}" loading="lazy" width="100%">
+    </div>
+    <p class="tech" style="text-align:center">Modified Diamond Model of Intrusion Analysis — right-click the image to open it full size.</p>`;
+}
+
+function profileBlock(x) {
+  const links = [
+    x?.mitreUrl ? `<a class="btn btn-ghost" href="${esc(x.mitreUrl)}" target="_blank" rel="noopener">ATT&amp;CK Profile ↗</a>` : '',
+    x?.etdaUrl ? `<a class="btn btn-ghost" href="${esc(x.etdaUrl)}" target="_blank" rel="noopener">ETDA Profile ↗</a>` : '',
+    x?.url ? `<a class="btn btn-ghost" href="${esc(x.url)}" target="_blank" rel="noopener">Heatmap source ↗</a>` : '',
+  ].filter(Boolean).join(' ');
+
+  const facts = [
+    ['ATT&amp;CK ID', x?.mitre],
+    ['Aliases', (x?.aliases || []).join(', ') || null],
+    ['Adversary base', (x?.country || '').replace(' (Base)', '') || null],
+    ['Motive', (x?.motivation || []).join(', ') || null],
+    ['Victim industries', (x?.industries || []).join(', ') || null],
+    ['Victim countries', (x?.victimCountries || []).join(', ') || null],
+    ['First seen', x?.firstSeen],
+    ['ATT&amp;CK last modified', x?.lastModified],
+  ].filter(([, v]) => v);
+
+  return `
+    <div class="badges" style="margin:10px 0 14px">${links}</div>
+    <dl class="facts">
+      ${facts.map(([k, v]) => `<div class="fact"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}
+    </dl>
+    ${x?.description ? `<h3 class="mt">Adversary Profile</h3><p class="prose">${esc(x.description)}</p>` : ''}`;
+}
+
 function openTtpPanel(mitreName) {
   const x = CVC.find((c) => (c.mitre || '').toLowerCase() === (mitreName || '').toLowerCase());
   const list = x?.ttps || [];
@@ -301,15 +340,19 @@ function openTtpPanel(mitreName) {
     <div class="meta">${list.length} techniques mapped</div>
     <div class="badges">${(x?.motivation || []).map((m) => `<span class="badge">${esc(m)}</span>`).join('')}${(x?.industries || []).slice(0, 6).map((m) => `<span class="badge">${esc(m)}</span>`).join('')}</div>
 
-    <h3 class="mt">ATT&amp;CK Navigator Layer</h3>
-    <div class="card" style="padding:0;overflow:hidden;margin-top:10px">
-      <iframe title="ATT&CK Navigator" width="100%" height="620" style="border:0;display:block;background:#fff"
-        src="${esc(navigatorUrl(layer))}"></iframe>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="ttp" role="tab">ATT&amp;CK Heatmap</button>
+      <button class="tab" data-tab="profile" role="tab">Adversary Profile</button>
+      <button class="tab" data-tab="diamond" role="tab">Diamond Model</button>
     </div>
 
-    <h3 class="mt">Technique list</h3>
-    <div class="techlist">
-      ${list.map((t) => {
+    <div class="tabpanel active" data-panel="ttp">
+      <div class="card" style="padding:0;overflow:hidden;margin-top:14px">
+        <iframe title="ATT&CK Navigator" width="100%" height="620" style="border:0;display:block;background:#fff"
+          src="${esc(navigatorUrl(layer))}"></iframe>
+      </div>
+      <div class="techlist" style="margin-top:12px">
+        ${list.map((t) => {
         const id = typeof t === 'string' ? t : (t.technique_id || t.id || '');
         const meta = TECHS.find((z) => z.id === id);
         return `<div class="techitem">
@@ -317,11 +360,19 @@ function openTtpPanel(mitreName) {
         <div><b>${esc(meta?.name || (typeof t === 'string' ? '' : (t.technique || t.name || '')))}</b>${meta?.tactic ? ` <span class="tech">· ${esc(meta.tactic)}</span>` : ''}</div>
       </div>`;
       }).join('') || '<p class="muted">No TTP data available.</p>'}
+      </div>
     </div>
-    ${x?.url ? `<p style="margin-top:14px"><a href="${esc(x.url)}" target="_blank" rel="noopener">Open source reference →</a></p>` : ''}
+
+    <div class="tabpanel" data-panel="profile">${profileBlock(x)}</div>
+    <div class="tabpanel" data-panel="diamond">${diamondBlock(x)}</div>
   `;
   $('#modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  $$('.tabs .tab', $('#modal-body')).forEach((t) => t.addEventListener('click', () => {
+    $$('.tabs .tab', $('#modal-body')).forEach((b) => b.classList.toggle('active', b === t));
+    $$('.tabpanel', $('#modal-body')).forEach((p) => p.classList.toggle('active', p.dataset.panel === t.dataset.tab));
+  }));
 
   $('#hm-scope').value = 'adversary';
   renderHeatmap();
