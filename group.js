@@ -1,6 +1,6 @@
 const params = new URLSearchParams(location.search);
 const id = params.get('id');
-fetch('data/actors.json').then(r=>r.json()).then(actors=>{
+fetch('data/actors.json?v=2').then(r=>r.json()).then(actors=>{
   const a = actors.find(x=>x.id===id);
   const main = document.getElementById('main');
   if(!a){ main.innerHTML='<p>Not found</p>'; return; }
@@ -22,7 +22,7 @@ fetch('data/actors.json').then(r=>r.json()).then(actors=>{
           <h4 style="margin:0 0 6px;color:#10b981">Capability</h4>
           ${diamond.capability?.sophistication?'<div class="meta">Sophistication: '+diamond.capability.sophistication+'</div>':''}
           ${diamond.capability?.malware?.length?'<div class="meta">Malware: '+diamond.capability.malware.join(', ')+'</div>':''}
-          <div class="meta">${(diamond.capability?.techniques||[]).length} key techniques</div>
+          <div class="meta">${(diamond.capability?.techniques||[]).length} techniques</div>
         </div>
         <div>
           <h4 style="margin:0 0 6px;color:#f59e0b">Infrastructure</h4>
@@ -31,7 +31,6 @@ fetch('data/actors.json').then(r=>r.json()).then(actors=>{
         <div>
           <h4 style="margin:0 0 6px;color:#ef4444">Victim</h4>
           ${diamond.victim?.sectors?.length?'<div class="meta">Sectors: '+diamond.victim.sectors.join(', ')+'</div>':''}
-          <div class="meta">${diamond.meta?.model||'Diamond Model'}</div>
         </div>
       </div>
     </div>
@@ -40,9 +39,7 @@ fetch('data/actors.json').then(r=>r.json()).then(actors=>{
     <div class="card" style="margin-bottom:16px">
       <h2 style="margin:0 0 10px">${a.name}</h2>
       ${a.aliases&&a.aliases.length?'<div class="meta">Aliases: '+a.aliases.join(', ')+'</div>':''}
-      <div class="badges">${(a.tags||[]).map(t=>'<span class="badge">'+t+'</span>').join('')}</div>
       <div class="meta">Country: ${a.country||'-'} · MITRE: ${a.mitreId||'-'}</div>
-      ${(a.references||[]).slice(0,8).map(r=>'<div><a href="'+r.url+'" target="_blank">'+r.publisher+': '+r.title+'</a></div>').join('')}
     </div>
     ${dm}
     <h3 style="margin:20px 0 12px">Techniques (${a.techniques?a.techniques.length:0})</h3>
