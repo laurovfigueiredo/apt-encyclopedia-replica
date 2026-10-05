@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Threat Model - APT Encyclopedia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1 class="logo"><a href="index.html" style="color:inherit;text-decoration:none">←</a> Cyllex <span class="muted">Threat Model</span></h1>
+      <p class="sub">Threat modeling overview for APT tracking and detection</p>
+      <nav style="margin-top:12px">
+        <a href="index.html">APT Groups</a> · <a href="attack.html">ATT&CK Techniques</a> · <a href="search.html">Advanced Search</a> · <a href="threat-model.html">Threat Model</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <div class="card" style="margin:18px 0">
+      <h2 style="margin:0 0 12px">Diamond Model of Intrusion Analysis</h2>
+      <p class="tech">The Diamond Model (Caltagirone, Pendergast, Betz, 2013) defines an intrusion as an event where an adversary uses a capability over infrastructure against a victim. Each event connects four core features: Adversary, Capability, Infrastructure, and Victim.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px">
+        <div class="card"><h3>Adversary</h3><p class="tech">Who is behind the attack? (Actors, attribution, country, aliases)</p></div>
+        <div class="card"><h3>Capability</h3><p class="tech">What tools/techniques? (TTPs, malware, sophistication)</p></div>
+        <div class="card"><h3>Infrastructure</h3><p class="tech">How they communicate? (C2, domains, IPs, services)</p></div>
+        <div class="card"><h3>Victim</h3><p class="tech">Who is targeted? (Sectors, geography, organizations)</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin:0 0 12px">ATT&CK Mapping</h2>
+      <p class="tech">Techniques are mapped to MITRE ATT&CK. Each group profile includes observed TTPs with tactic, technique ID (Txxxx), name, and contextual usage where available.</p>
+      <div style="margin-top:12px"><a href="attack.html">View ATT&CK Techniques Matrix →</a></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 style="margin:0 0 12px">Detection & Coverage</h2>
+      <p class="tech">This encyclopedia aggregates open-source intelligence (OSINT) from vendor reports, government advisories, and community sources to support threat hunting and detection engineering.</p>
+      <div class="meta">Coverage: ${222} techniques across ${58} groups</div>
+    </div>
+  </main>
+</body>
+</html>
