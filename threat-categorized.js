@@ -1,4 +1,13 @@
 fetch('data/cvc.json').then(r=>r.json()).then(data=>{
+  // full adversary list with aliases
+  const all = document.getElementById('adversary-all');
+  data.sort((a,b)=>a.name.localeCompare(b.name)).forEach(x=>{
+    const line = (x.name + (x.aliases&&x.aliases.length? ', '+x.aliases.join(', '):''));
+    const span = document.createElement('div');
+    span.textContent = line;
+    all.appendChild(span);
+  });
+  
   const motivesDiv = document.getElementById('motives');
   const indsDiv = document.getElementById('industries');
   const cDiv = document.getElementById('countries');
@@ -21,36 +30,25 @@ fetch('data/cvc.json').then(r=>r.json()).then(data=>{
   countries.forEach(c=>cDiv.appendChild(cb(c,'country')));
   
   function getSel(cls){ return [...document.querySelectorAll('.'+cls+':checked')].map(e=>e.value); }
-  
   function match(x){
-    const selM = getSel('motive'), selI=getSel('industry'), selC=getSel('country');
-    if(selM.length){
-      if(!(x.motivation||[]).some(m=>selM.includes(m))) return false;
-    }
-    if(selI.length){
-      if(!(x.industries||[]).some(i=>selI.includes(i))) return false;
-    }
-    if(selC.length){
-      const allc = [x.country].concat(x.victimCountries||[]).filter(Boolean);
-      if(!allc.some(c=>selC.includes(c))) return false;
-    }
+    const selM=getSel('motive'), selI=getSel('industry'), selC=getSel('country');
+    if(selM.length && !(x.motivation||[]).some(m=>selM.includes(m))) return false;
+    if(selI.length && !(x.industries||[]).some(i=>selI.includes(i))) return false;
+    if(selC.length){ const allc=[x.country].concat(x.victimCountries||[]).filter(Boolean); if(!allc.some(c=>selC.includes(c))) return false; }
     return true;
   }
-  
   function render(){
     const res = data.filter(match).sort((a,b)=>a.name.localeCompare(b.name));
     listDiv.innerHTML = res.map(x=>{
-      const ttps = (x.ttps||[]).slice(0,6).map(t=>t.technique_id).join(', ');
+      const ttps = (x.ttps||[]).slice(0,5).map(t=>t.technique_id).join(', ');
       return `<div class="card" style="margin-bottom:8px;padding:12px">
-        <div style="font-weight:600">${x.name}</div>
-        <div class="meta">${x.aliases.slice(0,4).join(', ')} ${x.aliases.length>4?'...':''}</div>
-        <div class="meta">Country: ${x.country||'-'} | Motives: ${(x.motivation||[]).join(', ')||'-'}</div>
-        <div class="meta">Industries: ${(x.industries||[]).slice(0,5).join(', ')}${(x.industries||[]).length>5?'...':''}</div>
-        <div class="meta">TTPs: ${ttps}${(x.ttps||[]).length>6?'... ('+(x.ttps||[]).length+')':''}</div>
+        <div style="font-weight:600">${x.name} ${(x.aliases||[]).length? '· '+x.aliases.slice(0,3).join(', '):''}</div>
+        <div class="meta">Motives: ${(x.motivation||[]).join(', ')||'-'} | Industries: ${(x.industries||[]).slice(0,4).join(', ')}${(x.industries||[]).length>4?'...':''}</div>
+        <div class="meta">Country: ${x.country||'-'} | TTPs: ${ttps}${(x.ttps||[]).length>5?'...':''}</div>
       </div>`;
     }).join('');
     count.textContent = res.length;
-    if(!res.length) listDiv.innerHTML = '<div class="meta">No adversaries match selected criteria</div>';
+    if(!res.length) listDiv.innerHTML='<div class="meta">No adversaries match selected criteria</div>';
   }
   document.querySelectorAll('input[type=checkbox]').forEach(e=>e.addEventListener('change',render));
   clear.addEventListener('click',()=>{ document.querySelectorAll('input[type=checkbox]').forEach(e=>e.checked=false); render(); });
