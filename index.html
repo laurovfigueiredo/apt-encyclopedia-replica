@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APT Encyclopedia - Replica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
+      <p class="sub">Replica with public data extracted from cyllex.io/encyclopedia</p>
+    </div>
+  </header>
+  <main class="container">
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search by name, alias, ID..." autocomplete="off">
+      <div class="stats">Showing <span id="count">0</span> groups</div>
+    </div>
+    <div id="grid" class="grid"></div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

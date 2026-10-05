@@ -1,0 +1,883 @@
+[
+  {
+    "id": "apt29",
+    "name": "APT29",
+    "aliases": [
+      "Cozy Bear",
+      "Midnight Blizzard",
+      "NOBELIUM",
+      "The Dukes",
+      "Dark Halo",
+      "UNC2452"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "G0016",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt28",
+    "name": "APT28",
+    "aliases": [
+      "Fancy Bear",
+      "Forest Blizzard",
+      "Sofacy",
+      "Pawn Storm",
+      "Sednit"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "G0007",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "lazarus",
+    "name": "Lazarus Group",
+    "aliases": [
+      "HIDDEN COBRA",
+      "Guardians of Peace",
+      "ZINC",
+      "Diamond Sleet",
+      "Bluenoroff"
+    ],
+    "country": "North Korea",
+    "techniqueCount": 20,
+    "mitreId": "G0032",
+    "tags": [],
+    "cyllexPosts": [
+      {
+        "title": "From Job Offer to Ring 0: Lazarus, CVE-2026-68820 and FudModule 3.1",
+        "path": "/blog/posts/lazarus-ring-0-cve-2026-68820.html",
+        "publishedDate": "2026-09-03",
+        "summary": "Full walk of the Lazarus AFD.sys kernel zero-day chain and FudModule 3.1 telemetry teardown."
+      }
+    ]
+  },
+  {
+    "id": "apt41",
+    "name": "APT41",
+    "aliases": [
+      "Double Dragon",
+      "Wicked Panda",
+      "BARIUM",
+      "Brass Typhoon",
+      "Winnti"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0096",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "fin7",
+    "name": "FIN7",
+    "aliases": [
+      "Carbanak",
+      "Navigator Group",
+      "Carbon Spider"
+    ],
+    "country": "Russia",
+    "techniqueCount": 22,
+    "mitreId": "G0046",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "sandworm",
+    "name": "Sandworm",
+    "aliases": [
+      "APT44",
+      "Voodoo Bear",
+      "BlackEnergy",
+      "Seashell Blizzard",
+      "TeleBots"
+    ],
+    "country": "Russia",
+    "techniqueCount": 21,
+    "mitreId": "G0034",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt10",
+    "name": "APT10",
+    "aliases": [
+      "MenuPass",
+      "Stone Panda",
+      "Red Apollo",
+      "CVNX",
+      "POTASSIUM"
+    ],
+    "country": "China",
+    "techniqueCount": 21,
+    "mitreId": "G0045",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "conti",
+    "name": "Conti",
+    "aliases": [
+      "Wizard Spider",
+      "UNC1878",
+      "Gold Ulrick",
+      "DEV-0193"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "G0102",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt33",
+    "name": "APT33",
+    "aliases": [
+      "Elfin",
+      "Refined Kitten",
+      "Peach Sandstorm",
+      "Holmium",
+      "Magnallium"
+    ],
+    "country": "Iran",
+    "techniqueCount": 20,
+    "mitreId": "G0064",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt34",
+    "name": "APT34",
+    "aliases": [
+      "OilRig",
+      "Helix Kitten",
+      "Cobalt Gypsy",
+      "Hazel Sandstorm",
+      "Earth Simnavaz",
+      "Crambus",
+      "Evasive Serpens",
+      "EUROPIUM",
+      "IRN2",
+      "ITG13",
+      "TA452"
+    ],
+    "country": "Iran",
+    "techniqueCount": 24,
+    "mitreId": "G0049",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt38",
+    "name": "APT38",
+    "aliases": [
+      "Bluenoroff",
+      "BeagleBoyz",
+      "Stardust Chollima",
+      "NICKEL GLADSTONE"
+    ],
+    "country": "North Korea",
+    "techniqueCount": 18,
+    "mitreId": "G0082",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "kimsuky",
+    "name": "Kimsuky",
+    "aliases": [
+      "Thallium",
+      "Velvet Chollima",
+      "Black Banshee",
+      "TA427"
+    ],
+    "country": "North Korea",
+    "techniqueCount": 20,
+    "mitreId": "G0094",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "darkhotel",
+    "name": "DarkHotel",
+    "aliases": [
+      "DUBNIUM",
+      "Tapaoux",
+      "Nemim",
+      "Karba"
+    ],
+    "country": "South Korea (suspected)",
+    "techniqueCount": 20,
+    "mitreId": "G0012",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "turla",
+    "name": "Turla",
+    "aliases": [
+      "Snake",
+      "Uroburos",
+      "Secret Blizzard",
+      "Waterbug",
+      "WhiteBear",
+      "Krypton"
+    ],
+    "country": "Russia",
+    "techniqueCount": 21,
+    "mitreId": "G0010",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt32",
+    "name": "APT32",
+    "aliases": [
+      "OceanLotus",
+      "SeaLotus",
+      "Canvas Cyclone",
+      "BISMUTH",
+      "APT-C-00"
+    ],
+    "country": "Vietnam",
+    "techniqueCount": 19,
+    "mitreId": "G0050",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "hafnium",
+    "name": "Hafnium",
+    "aliases": [
+      "Silk Typhoon",
+      "Operation Exchange Marauder"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0125",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "volt-typhoon",
+    "name": "Volt Typhoon",
+    "aliases": [
+      "Vanguard Panda",
+      "Bronze Silhouette",
+      "Insidious Taurus"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G1017",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "mustang-panda",
+    "name": "Mustang Panda",
+    "aliases": [
+      "Earth Preta",
+      "Bronze President",
+      "TA416",
+      "RedDelta",
+      "HIVE0154"
+    ],
+    "country": "China",
+    "techniqueCount": 23,
+    "mitreId": "G0129",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "earth-lusca",
+    "name": "Earth Lusca",
+    "aliases": [
+      "TAG-22"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G1006",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "winnti-group",
+    "name": "Winnti Group",
+    "aliases": [
+      "APT17",
+      "Axiom",
+      "BARIUM",
+      "Lead",
+      "PassCV"
+    ],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": "G0044",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "equation-group",
+    "name": "Equation Group",
+    "aliases": [
+      "EQGRP",
+      "Tilded Team"
+    ],
+    "country": "United States",
+    "techniqueCount": 20,
+    "mitreId": "G0020",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt35",
+    "name": "APT35",
+    "aliases": [
+      "Charming Kitten",
+      "Phosphorus",
+      "Newscaster",
+      "Magic Hound",
+      "Mint Sandstorm"
+    ],
+    "country": "Iran",
+    "techniqueCount": 19,
+    "mitreId": "G0059",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "muddywater",
+    "name": "MuddyWater",
+    "aliases": [
+      "Earth Vetala",
+      "MERCURY",
+      "Static Kitten",
+      "Seedworm",
+      "Mango Sandstorm",
+      "TA450"
+    ],
+    "country": "Iran",
+    "techniqueCount": 21,
+    "mitreId": "G0069",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "gallium",
+    "name": "GALLIUM",
+    "aliases": [
+      "Alloy Taurus",
+      "Granite Typhoon",
+      "Red Giant 4"
+    ],
+    "country": "China",
+    "techniqueCount": 18,
+    "mitreId": "G0093",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt15",
+    "name": "APT15",
+    "aliases": [
+      "Ke3chang",
+      "Mirage",
+      "Vixen Panda",
+      "Playful Dragon",
+      "NICKEL",
+      "Nylon Typhoon"
+    ],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": "G0004",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "naikon",
+    "name": "Naikon",
+    "aliases": [
+      "APT30",
+      "Override Panda",
+      "Camerashy"
+    ],
+    "country": "China",
+    "techniqueCount": 21,
+    "mitreId": "G0019",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "gamaredon",
+    "name": "Gamaredon",
+    "aliases": [
+      "Shuckworm",
+      "Primitive Bear",
+      "Trident Ursa",
+      "Aqua Blizzard",
+      "IRON TILDEN"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "G0047",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "moses-staff",
+    "name": "Moses Staff",
+    "aliases": [
+      "Cobalt Sapling"
+    ],
+    "country": "Iran",
+    "techniqueCount": 21,
+    "mitreId": "G1009",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "agrius",
+    "name": "Agrius",
+    "aliases": [
+      "Agonizing Serpens",
+      "BlackShadow",
+      "Pink Sandstorm",
+      "DEV-0022"
+    ],
+    "country": "Iran",
+    "techniqueCount": 20,
+    "mitreId": "G1030",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "whitefly",
+    "name": "Whitefly",
+    "aliases": [
+      "Suckfly"
+    ],
+    "country": "China",
+    "techniqueCount": 13,
+    "mitreId": "G0107",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "machete",
+    "name": "Machete",
+    "aliases": [
+      "El Machete",
+      "APT-C-43"
+    ],
+    "country": "Venezuela",
+    "techniqueCount": 0,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "sidewinder",
+    "name": "Sidewinder",
+    "aliases": [
+      "Rattlesnake",
+      "T-APT-04"
+    ],
+    "country": "India",
+    "techniqueCount": 22,
+    "mitreId": "G0121",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "patchwork",
+    "name": "Patchwork",
+    "aliases": [
+      "Dropping Elephant",
+      "Quilted Tiger",
+      "APT-C-09",
+      "Monsoon"
+    ],
+    "country": "India",
+    "techniqueCount": 21,
+    "mitreId": "G0040",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "ghostemperor",
+    "name": "Salt Typhoon",
+    "aliases": [
+      "GhostEmperor",
+      "FamousSparrow",
+      "Earth Estries",
+      "RedMike",
+      "UNC5807",
+      "UNC2286",
+      "Operator Panda"
+    ],
+    "country": "China",
+    "techniqueCount": 21,
+    "mitreId": "G1045",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "famoussparrow",
+    "name": "FamousSparrow",
+    "aliases": [],
+    "country": "China",
+    "techniqueCount": 14,
+    "mitreId": "G1045",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "rocke",
+    "name": "Rocke",
+    "aliases": [],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": "G0106",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "unc3886",
+    "name": "UNC3886",
+    "aliases": [],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "aquatic-panda",
+    "name": "Aquatic Panda",
+    "aliases": [
+      "Bronze University",
+      "Charcoal Typhoon",
+      "RedHotel"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0143",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt37",
+    "name": "APT37",
+    "aliases": [
+      "Reaper",
+      "ScarCruft",
+      "InkySquid",
+      "Ricochet Chollima",
+      "Group123"
+    ],
+    "country": "North Korea",
+    "techniqueCount": 20,
+    "mitreId": "G0067",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt1",
+    "name": "APT1",
+    "aliases": [
+      "Comment Crew",
+      "Comment Group",
+      "Byzantine Candor",
+      "Shanghai Group"
+    ],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": "G0006",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "bitter",
+    "name": "Bitter",
+    "aliases": [
+      "APT-C-08",
+      "T-APT-17"
+    ],
+    "country": "India",
+    "techniqueCount": 17,
+    "mitreId": "G1002",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt36",
+    "name": "APT36",
+    "aliases": [
+      "Transparent Tribe",
+      "Mythic Leopard",
+      "ProjectM"
+    ],
+    "country": "Pakistan",
+    "techniqueCount": 21,
+    "mitreId": "G0134",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt12",
+    "name": "APT12",
+    "aliases": [
+      "IXESHE",
+      "DynCalc",
+      "Numbered Panda",
+      "DNSCALC"
+    ],
+    "country": "China",
+    "techniqueCount": 19,
+    "mitreId": "G0005",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "donot-team",
+    "name": "DoNot Team",
+    "aliases": [
+      "APT-C-35",
+      "SECTOR02",
+      "Origami Elephant",
+      "Viceroy Tiger"
+    ],
+    "country": "India",
+    "techniqueCount": 23,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt5",
+    "name": "APT5",
+    "aliases": [
+      "Keyhole Panda",
+      "Mulberry Typhoon",
+      "MANGANESE",
+      "BRONZE FLEETWOOD",
+      "UNC2630"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G1023",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "blacktech",
+    "name": "BlackTech",
+    "aliases": [
+      "Palmerworm",
+      "Temp.Overboard",
+      "Circuit Panda"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0098",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "dragonfly",
+    "name": "Dragonfly",
+    "aliases": [
+      "Energetic Bear",
+      "Berserk Bear",
+      "Crouching Yeti",
+      "IRON LIBERTY",
+      "Havex"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "G0035",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt40",
+    "name": "APT40",
+    "aliases": [
+      "Leviathan",
+      "TEMP.Periscope",
+      "TEMP.Jumper",
+      "Gingham Typhoon",
+      "BRONZE MOHAWK"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0065",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "evasive-panda",
+    "name": "Evasive Panda",
+    "aliases": [
+      "Bronze Highland",
+      "Daggerfly"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G1034",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "tick",
+    "name": "Tick",
+    "aliases": [
+      "Bronze Butler",
+      "RedBaldKnight",
+      "Stalker Panda",
+      "Swirl Typhoon"
+    ],
+    "country": "China",
+    "techniqueCount": 20,
+    "mitreId": "G0060",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "apt31",
+    "name": "APT31",
+    "aliases": [
+      "Judgment Panda",
+      "Zirconium",
+      "Violet Typhoon",
+      "Bronze Vinewood",
+      "RedBravo",
+      "TA412",
+      "JungleBamboo",
+      "TIDE CASTLE"
+    ],
+    "country": "China",
+    "techniqueCount": 18,
+    "mitreId": "G0128",
+    "tags": [],
+    "cyllexPosts": [
+      {
+        "title": "Judgment Panda: When China Spies on its \"Ally\" Russia",
+        "path": "/blog/posts/apt31-judgment-panda.html",
+        "publishedDate": "2026-01-07",
+        "summary": "Long-form analysis of APT31's 2022-2025 Russian campaigns, VtChatter/CloudyLoader deep-dive and VirusTotal-as-C2 tradecraft."
+      },
+      {
+        "title": "Patch-Gap Zero-Days: BlueMoon",
+        "path": "/blog/posts/bluemoon-chrome-patch-gap-cve-2026-85046.html",
+        "publishedDate": "2026-09-17",
+        "summary": "TA412 (APT31) chained a Chrome patch-gap n-day and two zero-days against NGOs and mining firms via the LONGTALE Chrome extension."
+      }
+    ]
+  },
+  {
+    "id": "scattered-spider",
+    "name": "Scattered Spider",
+    "aliases": [
+      "UNC3944",
+      "Octo Tempest",
+      "Star Fraud",
+      "0ktapus",
+      "Muddled Libra"
+    ],
+    "country": "United States/United Kingdom",
+    "techniqueCount": 19,
+    "mitreId": "G1015",
+    "tags": [],
+    "cyllexPosts": [
+      {
+        "title": "No Malware Required: Inside Scattered Spider's Identity-First Playbook",
+        "path": "/blog/posts/scattered-spider-identity-first.html",
+        "publishedDate": "2026-07-15",
+        "summary": "Long-form analysis of Scattered Spider's help-desk-driven identity plane tradecraft \u00e2\u0080\u0094 why EDR walks past it, how the ALPHV \u00e2\u0086\u0092 RansomHub \u00e2\u0086\u0092 DragonForce affiliation chain shaped its 2023-2025 campaigns, and a validation checklist for whether your IAM stack would catch the same intrusion."
+      }
+    ]
+  },
+  {
+    "id": "lockbit",
+    "name": "LockBit",
+    "aliases": [
+      "LockBit 3.0",
+      "LockBit Black",
+      "ABCD Ransomware"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": "S1041",
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "blackcat",
+    "name": "BlackCat/ALPHV",
+    "aliases": [
+      "ALPHV",
+      "Noberus",
+      "UNC4466"
+    ],
+    "country": "Russia",
+    "techniqueCount": 20,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "ransomhub",
+    "name": "RansomHub",
+    "aliases": [
+      "RansomHub RaaS",
+      "Cyclops",
+      "Knight"
+    ],
+    "country": "Russia",
+    "techniqueCount": 21,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "black-basta",
+    "name": "Black Basta",
+    "aliases": [
+      "Storm-1811"
+    ],
+    "country": "Russia",
+    "techniqueCount": 21,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "shinyhunters",
+    "name": "ShinyHunters",
+    "aliases": [
+      "UNC6240",
+      "Scattered Lapsus$ Hunters (umbrella)"
+    ],
+    "country": "Unknown",
+    "techniqueCount": 0,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  },
+  {
+    "id": "storm-3069",
+    "name": "Storm-3069",
+    "aliases": [
+      "NeedyMantis operator"
+    ],
+    "country": "China",
+    "techniqueCount": 0,
+    "mitreId": null,
+    "tags": [],
+    "cyllexPosts": []
+  }
+]
