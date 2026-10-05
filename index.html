@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
 
@@ -19,6 +19,7 @@
       <a href="#overview">Overview</a>
       <a href="#categorized">Categorized Threats</a>
       <a href="#navigator">ATT&amp;CK Heatmap</a>
+      <a href="#intel">Recent Intelligence</a>
       <a href="#groups">APT Groups</a>
       <a href="#techniques">ATT&CK</a>
       <a href="#search">Advanced Search</a>
@@ -48,16 +49,25 @@
     <div class="filters">
       <details class="filter-box" open>
         <summary>Lookup by adversary motive</summary>
+        <input class="ac" id="ac-motive" type="search" placeholder="Autocomplete…" autocomplete="off">
         <div class="chips" id="f-motive"></div>
       </details>
 
       <details class="filter-box" open>
         <summary>Lookup by victim industry</summary>
+        <input class="ac" id="ac-industry" type="search" placeholder="Autocomplete…" autocomplete="off">
         <div class="chips" id="f-industry"></div>
       </details>
 
       <details class="filter-box" open>
-        <summary>Lookup by adversary or victim location</summary>
+        <summary>Lookup by adversary base <span class="muted">(where the group operates from)</span></summary>
+        <input class="ac" id="ac-base" type="search" placeholder="Autocomplete…" autocomplete="off">
+        <div class="chips" id="f-base"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by victim location <span class="muted">(who the group targets)</span></summary>
+        <input class="ac" id="ac-country" type="search" placeholder="Autocomplete…" autocomplete="off">
         <div class="chips" id="f-country"></div>
       </details>
     </div>
@@ -71,6 +81,36 @@
     <div class="card">
       <div id="cat-list" class="listbox"></div>
     </div>
+  </section>
+
+  <section id="intel" class="section">
+    <h2>Recent Intelligence</h2>
+    <p class="tech">Pre-computed ATT&amp;CK Navigator heatmaps published by the Control Validation Compass authors, covering named threat-intelligence reports. Each layer's score is the number of observations of the technique in that report.</p>
+
+    <div class="toolbar">
+      <label class="field" style="flex:1;min-width:260px">
+        <span>Report</span>
+        <input id="intel-q" type="search" placeholder="Search reports — e.g. LockBit, CISA, Ransomware…" autocomplete="off">
+      </label>
+      <button class="btn" id="intel-load">Load heatmap</button>
+      <button class="btn btn-ghost" id="intel-copy">Copiar JSON</button>
+      <button class="btn btn-ghost" id="intel-open">Abrir no Navigator</button>
+    </div>
+
+    <div id="intel-list" class="chips chips-reports"></div>
+    <div id="intel-meta" class="card" style="padding:12px 14px;margin:14px 0"></div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <iframe id="intel-frame" title="ATT&CK Navigator" width="100%" height="760"
+              style="border:0;display:block;background:#fff"
+              src="https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack"></iframe>
+    </div>
+
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:600">ATT&amp;CK Navigator Layer (JSON)</summary>
+      <textarea id="intel-json" rows="12" readonly spellcheck="false"
+                style="width:100%;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;background:#141418;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px"></textarea>
+    </details>
   </section>
 
   <section id="navigator" class="section">
@@ -178,11 +218,30 @@
 
 <footer class="footer">
   <div class="container">
-    <span class="tech">Replica built from public data extracted from cyllex.io/encyclopedia. Not affiliated with Cyllex.</span>
+    <p class="tech">
+      Built from public data extracted from cyllex.io/encyclopedia, with adversary
+      categories, Diamond Models and threat-intelligence layers published by the
+      Control Validation Compass project. Not affiliated with Cyllex or MITRE.
+    </p>
+    <p class="tech">
+      <b>Data:</b>
+      <a href="data/cvc.json" target="_blank" rel="noopener">adversaries (json)</a> ·
+      <a href="data/techniques.json" target="_blank" rel="noopener">techniques (json)</a> ·
+      <a href="data/actors.json" target="_blank" rel="noopener">groups (json)</a> ·
+      <a href="https://raw.githubusercontent.com/ControlCompass/ControlCompass.github.io/main/Control_Validation_Compass.csv" target="_blank" rel="noopener">Control Validation Compass (csv)</a> ·
+      <a href="data/intel/index.json" target="_blank" rel="noopener">intel layers index</a>
+    </p>
+    <p class="tech">
+      <b>Upstream:</b>
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">ControlCompass source</a> ·
+      <a href="https://github.com/tropChaud/Categorized-Adversary-TTPs" target="_blank" rel="noopener">categorized TTP heatmaps</a> ·
+      <a href="https://github.com/tropChaud/Cyber-Adversary-Heatmaps" target="_blank" rel="noopener">Cyber Adversary Heatmaps</a> ·
+      <a href="https://github.com/laurovfigueiredo/apt-encyclopedia-replica" target="_blank" rel="noopener">this replica</a>
+    </p>
   </div>
 </footer>
 
-<script src="heatmap.js?v=1"></script>
-<script src="spa.js?v=21"></script>
+<script src="heatmap.js?v=2"></script>
+<script src="spa.js?v=22"></script>
 </body>
 </html>

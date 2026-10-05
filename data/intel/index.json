@@ -1,0 +1,68 @@
+[
+ {
+  "id": "ci_00",
+  "title": "CISA Alert AA22-216A: 2021 Top Malware Strains - All Malware TTPs Combined (August 2022)",
+  "file": "data/intel/ci_00.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/CISA%20Alert%20AA22-216A/CISA_Alert_AA22-216A_-_All_Malware_Combined_sorted.json"
+ },
+ {
+  "id": "ci_01",
+  "title": "The DFIR Report BumbleBee Roasts Its Way to Domain Admin (August 2022)",
+  "file": "data/intel/ci_01.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Current%20Intelligence%20Reports/BumbleBee%20Roasts%20Its%20Way%20to%20Domain%20Admin%20%E2%80%93%20The%20DFIR%20Report.json"
+ },
+ {
+  "id": "ci_02",
+  "title": "LockBit 3.0 Update | Unpicking the Ransomware's Latest Anti-Analysis and Evasion Techniques - SentinelOne (July 2022)",
+  "file": "data/intel/ci_02.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Current%20Intelligence%20Reports/LockBit%203.0%20Update%20%20Unpicking%20the%20Ransomware's%20Latest%20Anti-Analysis%20and%20Evasion%20Techniques%20-%20SentinelOne.json"
+ },
+ {
+  "id": "ci_03",
+  "title": "The DFIR Report SELECT XMRig FROM SQLServer (July 2022)",
+  "file": "data/intel/ci_03.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Current%20Intelligence%20Reports/SELECT%20XMRig%20FROM%20SQLServer.json"
+ },
+ {
+  "id": "ci_04",
+  "title": "CISA Alert AA22-152A: Karakurt Data Extortion Group (June 2022)",
+  "file": "data/intel/ci_04.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Current%20Intelligence%20Reports/Karakurt%20Data%20Extortion%20Group%20CISA.json"
+ },
+ {
+  "id": "ci_05",
+  "title": "Stealer Malware Roundup (June 2022)",
+  "file": "data/intel/ci_05.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Stealer%20Malware/combined.json"
+ },
+ {
+  "id": "ci_06",
+  "title": "CISA Alert AA22-110A: Russian State-Sponsored and Criminal Cyber Threats to Critical Infrastructure (April 2022)",
+  "file": "data/intel/ci_06.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/CISA%20Alert%20AA22-110A/combined.json"
+ },
+ {
+  "id": "ci_07",
+  "title": "Red Canary 2022 Threat Detection Report (March 2022)",
+  "file": "data/intel/ci_07.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Red%20Canary%202022%20Threat%20Detection%20Report/Red_Canary_2022_Threat_Detection_Report.json"
+ },
+ {
+  "id": "ci_08",
+  "title": "Recorded Future 2021 Malware and TTP Threat Landscape (March 2022)",
+  "file": "data/intel/ci_08.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Recorded_Future_2021_Malware_and_TTP_Threat_Landscape/Recorded_Future_2021_Malware_and_TTP_Threat_Landscape.json"
+ },
+ {
+  "id": "ci_09",
+  "title": "2022 Russia-Ukraine War: Cyber Risk (ATT&CK TTPs) (March 2022)",
+  "file": "data/intel/ci_09.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Russia-TTP-Mappings/combined-sorted.json"
+ },
+ {
+  "id": "ci_10",
+  "title": "Recorded Future 5 Common Ransomware ATT&CK Techniques (December 2021)",
+  "file": "data/intel/ci_10.json",
+  "source": "https://raw.githubusercontent.com/tropChaud/Cyber-Adversary-Heatmaps/main/Recorded_Future_5_Common_Ransomware_ATT%26CK_Techniques/Recorded_Future_5_Common_Ransomware_ATT%26CK_Techniques.json"
+ }
+]

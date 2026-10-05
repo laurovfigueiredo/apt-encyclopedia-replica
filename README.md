@@ -49,3 +49,20 @@ Clicking **TTPs** on any adversary opens a three-tab modal:
 
 The 117 Diamond Model diagrams are the SVG files published with the Control Validation
 Compass data, used here under the same terms as the rest of that dataset.
+
+## Recent Intelligence
+
+The 11 named threat-intelligence reports published by the Control Validation Compass
+authors are available as pre-built Navigator layers, searchable by name, with copy,
+open-in-Navigator and a JSON view.
+
+## Attribution
+
+- Group and campaign data extracted from the public Cyllex APT Encyclopedia.
+- Adversary categories, Diamond Model diagrams and intelligence layers from the
+  [Control Validation Compass](https://github.com/ControlCompass/ControlCompass.github.io)
+  project by tropChaud, via
+  [Categorized-Adversary-TTPs](https://github.com/tropChaud/Categorized-Adversary-TTPs) and
+  [Cyber-Adversary-Heatmaps](https://github.com/tropChaud/Cyber-Adversary-Heatmaps).
+- Technique names, tactics, descriptions and platforms from
+  [MITRE ATT&CK v14](https://github.com/mitre-attack/attack-stix-data).

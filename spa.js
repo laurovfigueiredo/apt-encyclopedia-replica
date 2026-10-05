@@ -3,25 +3,28 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uniq = (a) => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y));
 
-let ACTORS = [], TECHS = [], CVC = [];
+let ACTORS = [], TECHS = [], CVC = [], INTEL = [];
 
 Promise.all([
   fetch('data/actors.json').then((r) => r.json()),
   fetch('data/techniques.json').then((r) => r.json()),
   fetch('data/cvc.json').then((r) => r.json()),
-]).then(([actors, techs, cvc]) => {
-  ACTORS = actors; TECHS = techs; CVC = cvc;
+  fetch('data/intel/index.json').then((r) => r.json()).catch(() => []),
+]).then(([actors, techs, cvc, intel]) => {
+  ACTORS = actors; TECHS = techs; CVC = cvc; INTEL = intel;
   HEATMAP.cvc = cvc;
   buildCategories(cvc);
   renderStats();
   buildFilters();
   buildHeatmapUI();
+  buildIntelUI();
   renderCategories();
   renderGroups();
   renderTechs();
   renderSources();
   bind();
   renderHeatmap();
+  renderIntelList();
 });
 
 /* ---------------- overview ---------------- */
@@ -41,7 +44,7 @@ function renderStats() {
 }
 
 /* ---------------- categorized threats ---------------- */
-const CAT = { motive: new Set(), industry: new Set(), country: new Set() };
+const CAT = { motive: new Set(), industry: new Set(), base: new Set(), country: new Set() };
 
 function chip(label, group) {
   return `<label class="chip"><input type="checkbox" data-group="${group}" value="${esc(label)}"><span>${esc(label)}</span></label>`;
@@ -50,8 +53,8 @@ function chip(label, group) {
 function buildFilters() {
   $('#f-motive').innerHTML = uniq(CVC.flatMap((x) => x.motivation)).map((v) => chip(v, 'motive')).join('');
   $('#f-industry').innerHTML = uniq(CVC.flatMap((x) => x.industries)).map((v) => chip(v, 'industry')).join('');
-  const loc = uniq(CVC.flatMap((x) => [x.country].concat(x.victimCountries || [])));
-  $('#f-country').innerHTML = loc.map((v) => chip(v, 'country')).join('');
+  $('#f-base').innerHTML = uniq(CVC.map((x) => x.country)).map((v) => chip(v, 'base')).join('');
+  $('#f-country').innerHTML = uniq(CVC.flatMap((x) => x.victimCountries || [])).map((v) => chip(v, 'country')).join('');
 
   const gc = uniq(ACTORS.map((a) => a.country));
   $('#groups-country').innerHTML = '<option value="">All countries</option>' + gc.map((c) => `<option>${esc(c)}</option>`).join('');
@@ -62,10 +65,12 @@ function buildFilters() {
 }
 
 function catMatch(x) {
-  const m = [...CAT.motive], i = [...CAT.industry], c = [...CAT.country];
+  const m = [...CAT.motive], i = [...CAT.industry];
+  const b = [...CAT.base], c = [...CAT.country];
   if (m.length && !(x.motivation || []).some((v) => m.includes(v))) return false;
   if (i.length && !(x.industries || []).some((v) => i.includes(v))) return false;
-  if (c.length && ![x.country].concat(x.victimCountries || []).filter(Boolean).some((v) => c.includes(v))) return false;
+  if (b.length && !b.includes(x.country)) return false;
+  if (c.length && !(x.victimCountries || []).some((v) => c.includes(v))) return false;
   return true;
 }
 
@@ -216,6 +221,114 @@ function renderHeatmap() {
   $('#hm-frame').src = empty
     ? 'https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack'
     : navigatorUrl(layer);
+}
+
+/* ---------------- autocomplete over the criterion chips ---------------- */
+function setupAutocomplete(inputSel, chipsSel, group) {
+  const input = $(inputSel);
+  const box = $(chipsSel);
+  if (!input || !box) return;
+
+  let items = [];
+  let active = -1;
+  let menu = null;
+
+  const labels = () => [...box.querySelectorAll('.chip')].map((c) => ({
+    el: c,
+    text: (c.textContent || '').trim(),
+    input: c.querySelector('input'),
+  }));
+
+  function close() { menu?.remove(); menu = null; active = -1; }
+
+  function open(list) {
+    close();
+    if (!list.length) return;
+    menu = document.createElement('div');
+    menu.className = 'ac-menu';
+    menu.innerHTML = list.map((it, i) => `<div class="ac-item${i === 0 ? ' active' : ''}" data-i="${i}">${esc(it.text)}</div>`).join('');
+    input.parentNode.appendChild(menu);
+    items = list;
+    active = 0;
+  }
+
+  function pick(i) {
+    const it = items[i];
+    if (!it || !it.input) return close();
+    it.input.checked = !it.input.checked;
+    const ev = new Event('change');
+    toggle({ target: { value: it.input.value, checked: it.input.checked } }, group);
+    input.value = '';
+    close();
+  }
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) return close();
+    open(labels().filter((x) => x.text.toLowerCase().includes(q)).slice(0, 12));
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (!menu) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); }
+    else if (e.key === 'Enter') { e.preventDefault(); pick(active); return; }
+    else if (e.key === 'Escape') { close(); return; }
+    menu.querySelectorAll('.ac-item').forEach((n, i) => n.classList.toggle('active', i === active));
+  });
+
+  input.addEventListener('blur', () => setTimeout(close, 140));
+}
+
+/* ---------------- recent intelligence reports ---------------- */
+let intelLayer = null;
+let intelIndex = new Map();
+
+function buildIntelUI() {
+  INTEL.forEach((r) => intelIndex.set(r.id, r));
+}
+
+function renderIntelList() {
+  const q = $('#intel-q').value.trim().toLowerCase();
+  const res = INTEL.filter((r) => !q || r.title.toLowerCase().includes(q));
+  $('#intel-list').innerHTML = res.map((r) => `
+    <label class="chip chip-report" data-id="${esc(r.id)}">
+      <input type="radio" name="intel" value="${esc(r.id)}" ${r.id === intelIndex.get($('#intel-q').dataset.sel)?.id ? 'checked' : ''}>
+      <span>${esc(r.title)}</span>
+    </label>`).join('') || '<p class="muted">No reports match that search.</p>';
+  $('#intel-list').dataset.count = res.length;
+}
+
+async function loadIntel(forceId) {
+  const id = forceId
+    || $('#intel-list').querySelector('input:checked')?.value
+    || $('#intel-list').querySelector('input')?.value
+    || INTEL[0]?.id;
+  if (!id) return;
+
+  const rec = intelIndex.get(id);
+  if (!rec) return;
+  $('#intel-q').dataset.sel = id;
+  try {
+    const layer = await (await fetch(rec.file)).json();
+    intelLayer = layer;
+    $('#intel-json').value = JSON.stringify(layer, null, 2);
+    $('#intel-frame').src = navigatorUrl(layer);
+
+    const top = [...(layer.techniques || [])].sort((a, b) => b.score - a.score).slice(0, 12);
+    const nameOf = (t) => TECHS.find((z) => z.id === t.techniqueID)?.name || '';
+    $('#intel-meta').innerHTML = `
+      <div class="row-main">
+        <div class="row-title">${esc(rec.title)}</div>
+        <div class="tech"><b>${(layer.techniques || []).length}</b> técnicas · score máximo <b>${layer.gradient?.maxValue ?? 1}</b></div>
+      </div>
+      <div class="badges" style="margin-top:10px">
+        ${top.map((t) => `<span class="badge" title="${esc(nameOf(t))}">${esc(t.techniqueID)} · ${t.score}</span>`).join('')}
+      </div>
+      <p class="tech" style="margin:12px 0 0"><a href="${esc(rec.source)}" target="_blank" rel="noopener">Layer source ↗</a></p>`;
+  } catch (e) {
+    $('#intel-meta').innerHTML = `<p class="muted">Could not load this layer: ${esc(e.message)}</p>`;
+  }
 }
 
 /* ---------------- sources ---------------- */
@@ -385,8 +498,14 @@ function closeModal() {
 
 /* ---------------- events ---------------- */
 function bind() {
+  setupAutocomplete('#ac-motive', '#f-motive', 'motive');
+  setupAutocomplete('#ac-industry', '#f-industry', 'industry');
+  setupAutocomplete('#ac-base', '#f-base', 'base');
+  setupAutocomplete('#ac-country', '#f-country', 'country');
+
   $('#f-motive').addEventListener('change', (e) => toggle(e, 'motive'));
   $('#f-industry').addEventListener('change', (e) => toggle(e, 'industry'));
+  $('#f-base').addEventListener('change', (e) => toggle(e, 'base'));
   $('#f-country').addEventListener('change', (e) => toggle(e, 'country'));
   $('#cat-q').addEventListener('input', renderCategories);
   $('#cat-clear').addEventListener('click', () => {
@@ -419,6 +538,18 @@ function bind() {
     URL.revokeObjectURL(a.href);
   });
   $('#hm-open').addEventListener('click', () => window.open(navigatorUrl(HEATMAP.current.layer), '_blank', 'noopener'));
+
+  $('#intel-q').addEventListener('input', renderIntelList);
+  $('#intel-load').addEventListener('click', loadIntel);
+  $('#intel-list').addEventListener('change', loadIntel);
+  $('#intel-copy').addEventListener('click', async () => {
+    const t = $('#intel-json');
+    try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand('copy'); }
+    flash($('#intel-copy'), 'Copiado!');
+  });
+  $('#intel-open').addEventListener('click', () => {
+    if (intelLayer) window.open(navigatorUrl(intelLayer), '_blank', 'noopener');
+  });
 
   $('#groups-q').addEventListener('input', renderGroups);
   ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => $(s).addEventListener('change', renderGroups));
