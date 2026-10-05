@@ -1,13 +1,11 @@
-fetch('data/cvc.json?v=1').then(r=>r.json()).then(data=>{
+fetch('data/cvc.json?v=2').then(r=>r.json()).then(data=>{
   const all = document.getElementById('adversary-all');
   if(!all) return;
   const items = [];
   data.forEach(x=>{
-    const parts = [];
-    if(x.name) parts.push(x.name);
-    (x.aliases||[]).forEach(a=>{ if(a && a!==x.name) parts.push(a); });
-    items.push(parts.join(', '));
+    items.push(x.name);
   });
-  items.sort();
+  items.sort((a,b)=>a.localeCompare(b));
   all.innerHTML = items.map(i=>`<div>${i}</div>`).join('');
+  document.getElementById('count').textContent = data.length;
 });
