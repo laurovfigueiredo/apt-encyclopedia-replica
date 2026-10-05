@@ -14,9 +14,12 @@ const HEATMAP = {
   CATS: [],           // {id, type, adversaries:[]}
   BY_ID: new Map(),
   cvc: [],
+  selected: new Set(), // category ids currently ticked in the filter panel
   current: null,          // {layer, adversaries, name}
   selectedAdversary: '',  // mitre slug chosen via the "TTPs" button
 };
+
+const uniqIn = (a) => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y));
 
 function buildCategories(cvc) {
   const cats = [];
@@ -28,16 +31,16 @@ function buildCategories(cvc) {
     HEATMAP.BY_ID.set(id, c);
   };
 
-  uniq(cvc.flatMap((x) => x.motivation)).forEach((m) =>
+  uniqIn(cvc.flatMap((x) => x.motivation)).forEach((m) =>
     push(m, 'motive', (x) => (x.motivation || []).includes(m)));
 
-  uniq(cvc.flatMap((x) => x.industries)).forEach((i) =>
+  uniqIn(cvc.flatMap((x) => x.industries)).forEach((i) =>
     push(i, 'industry', (x) => (x.industries || []).includes(i)));
 
-  uniq(cvc.map((x) => x.country).filter(Boolean)).forEach((c) =>
+  uniqIn(cvc.map((x) => x.country).filter(Boolean)).forEach((c) =>
     push(c, 'base', (x) => x.country === c));
 
-  uniq(cvc.flatMap((x) => x.victimCountries || [])).forEach((c) =>
+  uniqIn(cvc.flatMap((x) => x.victimCountries || [])).forEach((c) =>
     push(c, 'victim', (x) => (x.victimCountries || []).includes(c)));
 
   HEATMAP.CATS = cats;
@@ -88,7 +91,15 @@ function navigatorUrl(layer) {
 
 /* ---- selection resolution (mirrors the original combine semantics) ---- */
 function selectedCategoryIds() {
-  return [...new Set([...document.querySelectorAll('#categorized .chip input:checked')].map((i) => i.value))];
+  return [...HEATMAP.selected];
+}
+
+function setCriterionSelected(id, on) {
+  on ? HEATMAP.selected.add(id) : HEATMAP.selected.delete(id);
+}
+
+function clearCriteria() {
+  HEATMAP.selected.clear();
 }
 
 function adversariesForScope(scope, mode) {

@@ -341,6 +341,7 @@ function bind() {
   $('#cat-clear').addEventListener('click', () => {
     $$('#categorized input[type=checkbox]').forEach((c) => (c.checked = false));
     Object.values(CAT).forEach((s) => s.clear());
+    clearCriteria();
     renderCategories();
     renderHeatmap();
   });
@@ -391,6 +392,7 @@ function bind() {
 function toggle(e, group) {
   const v = e.target.value;
   e.target.checked ? CAT[group].add(v) : CAT[group].delete(v);
+  setCriterionSelected(v, e.target.checked);
   renderCategories();
   renderHeatmap();
 }
