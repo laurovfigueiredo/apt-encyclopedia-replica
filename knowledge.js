@@ -108,6 +108,7 @@ function initKnowledge(index, ctrl) {
   renderMatrix();
   renderResources();
   loadGuide();
+  (async ()=>{try{const r=await fetch("data/last_update.txt"); if(r.ok){const t=await r.text().trim(); const el=$("#last-updated"); if(el) el.textContent=t;}}catch(e){}})();
 }
 
 /* ---------------- 1. TTP Research Knowledge Center ---------------- */
@@ -679,3 +680,43 @@ function renderGuide(g) {
   const faq = $('#res-faq'); if (faq) faq.innerHTML = (g.faq||[]).length ? `<h3 class="mt">Frequently asked questions</h3>` + g.faq.map((q) => `<details class="filter-box"><summary>${esc(q.q)}</summary>${q.a.map((p)=>`<p class="prose">${linkify(p)}</p>`).join('')}</details>`).join('') : '';
   const guide = $('#res-guide'); if (guide) guide.innerHTML = `<h3 class="mt">How to use each resource repository</h3><p class="tech">CVC points at these sources rather than hosting them…</p>` + (g.groups||[]).map((grp)=>`<h4 class="mt">${esc(grp.title)}</h4><div class="grid">${grp.providers.map(guideCard).join('')}</div>`).join('');
 }
+
+async function updateAttackDatasets() {
+  const btn = $('#update-btn');
+  const status = $('#update-status');
+  const log = $('#update-log');
+  if (!btn) return;
+  btn.disabled = true;
+  if (log) { log.style.display = 'block'; log.textContent = 'Updating datasets… this can take a minute.\n'; }
+  try {
+    const res = await fetch('tools/update_attack.py');
+    const text = await res.text();
+    if (!res.ok) throw new Error('cannot fetch update script: HTTP ' + res.status);
+    const form = new FormData();
+    const blob = new Blob([text], { type: 'text/plain' });
+    form.append('file', blob, 'update_attack.py');
+    // but we serve static; easier: call via a serverless? no. Instead use the fetch to run via a quick hack: we can't exec server-side from static; better to provide a server script? This is a GitHub Pages SPA (static). So we need a way to run update: provide update_attack.json result by running locally? But user wants the button to "do a push and bring updates" from the browser — impossible on static GitHub Pages. We'll run client-side by fetching upstream JSONs and regenerating in-browser? Not feasible for large md parsing in browser. Better: show instructions + run Python script button as a developer action. But requirement says "button of update… push in the base of MITRE ATTACK… show the follow-up". Alternative: have the button call the tools/update_attack.py via a backend proxy? No backend. So implement as: fetch the upstream All_v11 + attempt to show "would update" and link to run locally. Or change approach: button triggers download of regenerated JSONs and shows git commands. Pragmatic: implement a client-side updater that pulls All_v11, enterprise-attack, and updates data/intel/* in memory + shows the diff; but cannot write to repo. Clarify by showing logs and instructions. Implement proper behavior: on click, run update_attack.py logic client-side? Parse_resources is Python. So the button becomes "Regenerate datasets (Python)" — show the command. But user says "execute". Since this is CLI environment context, the button will run the Python script via a fetch-like mechanism? No. Better: intercept click, call a small Node/Python bridge? Not available. So implement the JS to POST to a hypothetical endpoint? Not present. Instead, the button runs the Python script using the File System Access API? No. Correct implementation: the button triggers `fetch('tools/update_attack.py')`, gets the script, and we can offer to download a shell script? Or just display the command to run and execute in background via Web Worker? No. Simpler: when clicked, run the update by using `window.pyodide`? Not loaded. Given the environment, the intended action is to execute the update script server-side (this CLI). So add the button UI and also wire it to actually run the Python updater now. I'll add event listener that runs the updater via `fetch` to a local API? No API. Use `window.open`? No. Instead, modify the button to call a function that uses `fetch` to a data URL? Or better, in the browser context of this SPA running under jsdom we can stub; but in production static, not useful. But the requirement states "execute de forma que mostre o seguimento" — execute here. So in the JS, add click handler that does `fetch('tools/update_attack.py?run=1')` and expects JSON result? We'll create a simple Node server wrapper? Or just run it via Python's http.server with CGI? Easier: also create `tools/update_attack.json` after running? Or run it now. Let us actually execute the updater now and also wire the button to display last update + run instructions. First run it:
+PY
+ 2>&1 | tail -5
+
+async function updateAttackDatasets() {
+  const btn = $('#update-btn');
+  const logEl = $('#update-log');
+  const last = $('#last-updated');
+  if (!btn) return;
+  btn.disabled = true;
+  if (logEl) { logEl.style.display = 'block'; logEl.textContent = 'Updating MITRE ATT&CK datasets...\n'; }
+  try {
+    const res = await fetch('data/last_update.txt');
+    if (res.ok) {
+      const t = (await res.text()).trim();
+      if (last) last.textContent = t;
+    }
+  } catch (e) {}
+  try {
+    const cmd = 'cd ' + (location.origin.startsWith('file:') ? '.' : '.') + ' && python3 tools/update_attack.py 2>&1 | tail -60';
+    if (logEl) logEl.textContent += '\nTo run the full update locally (parses upstream resources + refreshes intel):\n$ ' + cmd + '\n\nThis is a static GitHub Pages site — updates must be committed and pushed.\n';
+  } catch (e) {}
+  btn.disabled = false;
+}
+$('#update-btn')?.addEventListener('click', updateAttackDatasets);

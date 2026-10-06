@@ -316,7 +316,12 @@
 
   <section id="resources" class="section">
     <h2>Knowledge Center</h2>
-    <p class="tech" id="res-intro"><span class="muted">loading the upstream guide…</span></p>
+    <p class="tech" id="res-intro"><span class="muted">loading the upstream guide…</span></p>    <div class="toolbar" style="margin:8px 0 10px">
+      <button class="btn btn-ghost" id="update-btn">Update MITRE ATT&CK datasets</button>
+      <span class="muted" id="update-status">Last updated: <span id="last-updated">—</span></span>
+      <pre id="update-log" class="jsonbox" style="display:none;max-height:220px;overflow:auto;margin-top:10px"></pre>
+    </div>
+
     <div id="res-links"></div>
     <div id="res-faq"></div>
     <div id="res-guide"></div>
