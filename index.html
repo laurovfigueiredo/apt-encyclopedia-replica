@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 </head>
 <body>
 
@@ -202,6 +202,19 @@
 
     <div class="stats-bar" id="kn-stats"></div>
 
+    <div class="card" id="kn-idcard" style="margin:16px 0">
+      <div class="row-main">
+        <div class="row-title">Look up one technique by identifier</div>
+        <div class="tech">Paste a MITRE ATT&CK identifier</div>
+      </div>
+      <div class="toolbar" style="margin-top:10px">
+        <input id="kn-id" type="search" placeholder="T1059.003">
+        <button class="btn" id="kn-id-go">Look it up</button>
+        <button class="btn btn-ghost" id="kn-id-clear">Clear</button>
+      </div>
+      <div id="kn-id-out"></div>
+    </div>
+
     <div class="toolbar">
       <label class="field" style="flex:1;min-width:260px">
         <span>Search</span>
@@ -277,12 +290,32 @@
       <button class="btn btn-ghost" id="risk-trickbot">Line It Up! — start from the Trickbot example</button></p>
 
     <div id="risk-summary"></div>
+    <div class="card" style="margin:14px 0">
+      <div class="row-main">
+        <div class="row-title">ATT&CK Navigator layer</div>
+        <div class="tech">Bring your own threat scope</div>
+      </div>
+      <div class="toolbar" style="margin-top:10px">
+        <label class="btn btn-ghost" for="risk-file">Upload a Navigator json layer file</label>
+        <input id="risk-file" type="file" accept=".json,application/json" hidden>
+        <input id="risk-url" type="url" placeholder="https://.../layer.json">
+        <button class="btn" id="risk-url-go">Lookup URL</button>
+        <button class="btn btn-ghost" id="risk-skip">Skip this step</button>
+        <button class="btn btn-ghost" id="risk-reset">Back to the threat model</button>
+      </div>
+      <details style="margin-top:10px"><summary>Layer JSON currently in scope</summary><textarea id="risk-json" class="jsonbox" readonly rows="8"></textarea></details>
+      <div id="risk-msg"></div>
+    </div>
     <div id="risk-out" style="overflow:auto;max-height:640px"></div>
   </section>
 
   <section id="resources" class="section">
     <h2>Knowledge Center</h2>
-    <p class="tech">The upstream projects and reference material this tool draws on.</p>
+    <p class="tech" id="res-intro"><span class="muted">loading the upstream guide…</span></p>
+    <div id="res-links"></div>
+    <div id="res-faq"></div>
+    <div id="res-guide"></div>
+    <h3 class="mt">Also underpinning this tool</h3>
     <div class="grid" id="res-list"></div>
   </section>
 
@@ -350,8 +383,8 @@
   </div>
 </footer>
 
-<script src="heatmap.js?v=4"></script>
-<script src="knowledge.js?v=3"></script>
-<script src="spa.js?v=24"></script>
+<script src="heatmap.js?v=5"></script>
+<script src="knowledge.js?v=4"></script>
+<script src="spa.js?v=25"></script>
 </body>
 </html>

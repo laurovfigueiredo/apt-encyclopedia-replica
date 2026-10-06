@@ -107,6 +107,7 @@ function initKnowledge(index, ctrl) {
   renderKnowledgeStats();
   renderMatrix();
   renderResources();
+  loadGuide();
 }
 
 /* ---------------- 1. TTP Research Knowledge Center ---------------- */
@@ -476,6 +477,24 @@ function renderRisk() {
 }
 
 /* ---------------- 4. Knowledge Center ---------------- */
+
+function linkify(text) {
+  if (!text) return '';
+  return esc(text).replace(/\[\[([^|\]]*)\|([^\]]+)\]\]/g,
+    (_, label, href) => `<a href="${href}" target="_blank" rel="noopener">${label}</a>`);
+}
+
+const GUIDE = { data: null, promise: null };
+
+function loadGuide() {
+  if (GUIDE.promise) return GUIDE.promise;
+  GUIDE.promise = fetch('data/resources_guide.json')
+    .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then((g) => { GUIDE.data = g; renderGuide(g); return g; })
+    .catch((e) => { const box = $('#res-guide'); if (box) box.innerHTML = `<p class="tag-warn">Could not load: ${esc(e.message)}</p>`; throw e; });
+  return GUIDE.promise;
+}
+
 const RESOURCES = [
   ['MITRE ATT&CK', 'Knowledge base of adversary tactics and techniques derived from real-world observations.', 'https://attack.mitre.org/'],
   ['MITRE D3FEND', 'Countermeasure knowledge base — a defensive counterpart to ATT&CK, indexed by technique.', 'https://d3fend.mitre.org/'],
