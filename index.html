@@ -254,6 +254,11 @@
       <div class="toolbar">
         <label class="chip"><input type="checkbox" id="ctl-lowest"><span>'Lowest-level' techniques only</span></label>
       </div>
+      <p class="tech" style="margin:8px 0 0">
+        <b>'Lowest-level'</b> means ATT&amp;CK sub-techniques, plus techniques that have no sub-techniques of their own.
+        A technique that <i>contains</i> sub-techniques is <b>not</b> lowest-level — so T1001 is excluded, while T1001.003 is included.
+        The label describes the granularity an author would pick when looking for the most specific mapping; it is not part of the ATT&amp;CK framework itself.
+      </p>
       <div class="meta" style="margin:10px 0 4px">Tactics</div>
       <div class="chips" id="ctl-tactics"></div>
     </details>
