@@ -641,3 +641,41 @@ function buildKnowledgeTactics() {
   sel.innerHTML = '<option value="">All tactics</option>'
     + tactics.map((t) => `<option>${esc(t)}</option>`).join('');
 }
+const DETAIL_ANCHOR = {
+  d3fend: '#mitre-d3fend',
+  car: '#cyber-analytics-repository',
+  car_red: '#cyber-analytics-repository-1',
+  sigma: '#sigma-rules-public-repository',
+  splunk: '#splunk-security-content',
+  elastic: '#elastic-detection-rules',
+  sentinel_defender: '#microsoft-sentinel-and-microsoft-365-defender-repository',
+  art: '#atomic-red-team',
+  rta: '#stratus-red-team',
+};
+function guideCard(p) {
+  const host = p.url ? esc(p.url.replace(/^https?:\/\//, '').replace(/\/$/, '')) : '';
+  return `<div class="card res-card"${p.id ? ` id="res-${esc(p.id)}"` : ''}>
+    <h3>${esc(p.name)}</h3>
+    ${p.url ? `<div class="meta"><a href="${esc(p.url)}" target="_blank" rel="noopener">${host} ↗</a></div>` : ''}
+    <div class="badges">
+      ${p.repoUpdated ? `<span class="badge">repo updated ${esc(p.repoUpdated)}</span>` : ''}
+      ${p.accessed ? `<span class="badge">read by Compass ${esc(p.accessed)}</span>` : ''}
+    </div>
+    ${p.overview ? `<p class="tech">${linkify(p.overview)}</p>` : ''}
+    ${p.navigate ? `<p class="tech"><b>How to navigate:</b> ${linkify(p.navigate)}</p>` : ''}
+  </div>`;
+}
+function linkGroup(title, items, withVideo) {
+  if (!items || !items.length) return '';
+  const video = withVideo ? items.find((i) => /youtube-nocookie\.com\/embed/.test(i.url)) : null;
+  const rest = items.filter((i) => i !== video);
+  return `<h3 class="mt">${esc(title)}</h3>
+    ${video ? `<div class="card" style="padding:12px;margin-bottom:14px"><div class="embedwrap"><iframe src="${esc(video.url)}" title="CVC tutorial" loading="lazy" allowfullscreen></iframe></div></div>` : ''}
+    ${rest.length ? `<div class="grid">${rest.map((i) => `<a class="card res-card" href="${esc(i.url)}" target="_blank" rel="noopener"><h3>${esc(i.label)} ↗</h3></a>`).join('')}</div>` : ''}`;
+}
+function renderGuide(g) {
+  const intro = $('#res-intro'); if (intro) intro.innerHTML = linkify(g.intro);
+  const links = $('#res-links'); if (links) links.innerHTML = linkGroup('Tutorials', g.tutorials.items, true) + linkGroup('General knowledge', g.general.items, false);
+  const faq = $('#res-faq'); if (faq) faq.innerHTML = (g.faq||[]).length ? `<h3 class="mt">Frequently asked questions</h3>` + g.faq.map((q) => `<details class="filter-box"><summary>${esc(q.q)}</summary>${q.a.map((p)=>`<p class="prose">${linkify(p)}</p>`).join('')}</details>`).join('') : '';
+  const guide = $('#res-guide'); if (guide) guide.innerHTML = `<h3 class="mt">How to use each resource repository</h3><p class="tech">CVC points at these sources rather than hosting them…</p>` + (g.groups||[]).map((grp)=>`<h4 class="mt">${esc(grp.title)}</h4><div class="grid">${grp.providers.map(guideCard).join('')}</div>`).join('');
+}
