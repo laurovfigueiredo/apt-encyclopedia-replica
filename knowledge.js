@@ -108,6 +108,8 @@ function initKnowledge(index, ctrl) {
   renderMatrix();
   renderResources();
   loadGuide();
+  (async()=>{try{const r=await fetch("data/last_update.txt"); if(r.ok){const el=$("#last-updated"); if(el) el.textContent=(await r.text()).trim();}}catch(e){}})();
+  loadGuide();
 }
 
 /* ---------------- 1. TTP Research Knowledge Center ---------------- */
@@ -641,20 +643,14 @@ function buildKnowledgeTactics() {
   sel.innerHTML = '<option value="">All tactics</option>'
     + tactics.map((t) => `<option>${esc(t)}</option>`).join('');
 }
-
-async function updateAttackDatasets() {
-  const btn = $("#update-btn");
-  const logEl = $("#update-log");
-  const lastEl = $("#last-updated");
-  if (!btn) return;
-  btn.disabled = true;
-  if (logEl) { logEl.style.display = "block"; logEl.textContent = "To run the full update locally:\n\n  python3 tools/exec_update.py\n\nThis parses upstream resources and refreshes datasets; commit and push to publish.\n"; }
-  try {
-    const r = await fetch("data/last_update.txt");
-    if (r.ok && lastEl) lastEl.textContent = (await r.text()).trim();
-  } catch (e) {}
-  btn.disabled = false;
+async function updateAttackDatasets(){
+  const btn=$("#update-btn"), logEl=$("#update-log"), lastEl=$("#last-updated");
+  if(!btn)return;
+  btn.disabled=true;
+  if(logEl){logEl.style.display="block"; logEl.textContent="To run the full update locally:\n\n  python3 tools/exec_update.py\n\nParses upstream resources and refreshes datasets; commit and push to publish.\n";}
+  try{const r=await fetch("data/last_update.txt"); if(r.ok&&lastEl) lastEl.textContent=(await r.text()).trim();}catch(e){}
+  btn.disabled=false;
 }
-$(document).addEventListener("DOMContentLoaded", () => {
+$(document).addEventListener("DOMContentLoaded", ()=>{
   $("#update-btn")?.addEventListener("click", updateAttackDatasets);
 });
