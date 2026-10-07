@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APT Encyclopedia — TTP Research & Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=27">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
+    <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model.</p>
+    <nav class="nav">
+      <a href="index.html">Overview</a>
+      <a href="categorized.html">Categorized Threats</a>
+      <a href="heatmap.html">ATT&amp;CK Heatmap</a>
+      <a href="intel.html">Recent Intelligence</a>
+      <a href="research.html" class="active" aria-current="page">TTP Research &amp; Search</a>
+      <a href="controls.html">Lookup by Controls</a>
+      <a href="alignment.html">Threat Alignment</a>
+      <a href="resources.html">Knowledge Center</a>
+      <a href="groups.html">APT Groups</a>
+      <a href="techniques.html">ATT&CK</a>
+      <a href="model.html">Threat Model</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="knowledge" class="section">
+    <h2>TTP Research Knowledge Center <span class="muted" id="kn-count"></span></h2>
+    <p class="tech">Every ATT&amp;CK technique documented with its mapped <b>policy / process controls</b>, <b>detection rules</b> and <b>offensive tests</b> — the purple-team reference layer behind the threat model above. Coverage of D3FEND, CAR, Sigma, Splunk, Elastic, Microsoft Sentinel &amp; Defender, Atomic Red Team and Stratus Red Team.</p>
+
+    <div class="stats-bar" id="kn-stats"></div>
+
+    <div class="card" id="kn-idcard" style="margin:16px 0">
+      <div class="row-main">
+        <div class="row-title">Look up one technique by identifier</div>
+        <div class="tech">Paste a MITRE ATT&CK identifier</div>
+      </div>
+      <div class="toolbar" style="margin-top:10px">
+        <input id="kn-id" type="search" placeholder="T1059.003">
+        <button class="btn" id="kn-id-go">Look it up</button>
+        <button class="btn btn-ghost" id="kn-id-clear">Clear</button>
+      </div>
+      <div id="kn-id-out"></div>
+    </div>
+
+    <div class="toolbar">
+      <label class="field" style="flex:1;min-width:260px">
+        <span>Search</span>
+        <input id="kn-q" type="search" placeholder="Technique ID, name, tactic or description..." autocomplete="off">
+      </label>
+      <label class="field"><span>Tactic</span><select id="kn-tactic"><option value="">All tactics</option></select></label>
+      <label class="field"><span>Has mapped content</span>
+        <select id="kn-has">
+          <option value="">Any</option>
+          <option value="policy">Policy / process controls</option>
+          <option value="detection">Detection rules</option>
+          <option value="test">Offensive tests</option>
+          <option value="none">Nothing mapped yet</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="grid" id="kn-list"></div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p class="tech">
+      Built from public data extracted from cyllex.io/encyclopedia, with adversary
+      categories, Diamond Models and threat-intelligence layers published by the
+      Control Validation Compass project. Not affiliated with Cyllex or MITRE.
+    </p>
+    <p class="tech">
+      <b>Data:</b>
+      <a href="data/cvc.json" target="_blank" rel="noopener">adversaries (json)</a> ·
+      <a href="data/techniques.json" target="_blank" rel="noopener">techniques (json)</a> ·
+      <a href="data/controls.json" target="_blank" rel="noopener">controls matrix (json)</a> ·
+      <a href="data/technique_index.json" target="_blank" rel="noopener">technique index (json)</a> ·
+      <a href="data/technique_pages.json" target="_blank" rel="noopener">technique pages (json)</a>
+    </p>
+    <p class="tech">
+      <b>Upstream:</b>
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">ControlCompass source</a> ·
+      <a href="https://github.com/laurovfigueiredo/apt-encyclopedia-replica" target="_blank" rel="noopener">this replica</a>
+    </p>
+  </div>
+</footer>
+
+<script src="heatmap.js?v=6"></script>
+<script src="knowledge.js?v=5"></script>
+<script src="spa.js?v=26"></script>
+</body>
+</html>

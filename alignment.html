@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APT Encyclopedia — Threat Alignment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=27">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
+    <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model.</p>
+    <nav class="nav">
+      <a href="index.html">Overview</a>
+      <a href="categorized.html">Categorized Threats</a>
+      <a href="heatmap.html">ATT&amp;CK Heatmap</a>
+      <a href="intel.html">Recent Intelligence</a>
+      <a href="research.html">TTP Research &amp; Search</a>
+      <a href="controls.html">Lookup by Controls</a>
+      <a href="alignment.html" class="active" aria-current="page">Threat Alignment</a>
+      <a href="resources.html">Knowledge Center</a>
+      <a href="groups.html">APT Groups</a>
+      <a href="techniques.html">ATT&CK</a>
+      <a href="model.html">Threat Model</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="risk" class="section">
+    <h2>Threat Alignment Risk Workflow</h2>
+    <p class="tech">Line up the threat model above against the control stack below to expose exactly where detection is missing.
+      Scope comes from <a href="categorized.html">Categorized Threats</a> and the control stack from <a href="controls.html">Lookup by Controls</a> — both carry over automatically.
+      <button class="btn btn-ghost" id="risk-trickbot">Line It Up! — start from the Trickbot example</button></p>
+
+    <div id="risk-summary"></div>
+    <div class="card" style="margin:14px 0">
+      <div class="row-main">
+        <div class="row-title">ATT&CK Navigator layer</div>
+        <div class="tech">Bring your own threat scope</div>
+      </div>
+      <div class="toolbar" style="margin-top:10px">
+        <label class="btn btn-ghost" for="risk-file">Upload a Navigator json layer file</label>
+        <input id="risk-file" type="file" accept=".json,application/json" hidden>
+        <input id="risk-url" type="url" placeholder="https://.../layer.json">
+        <button class="btn" id="risk-url-go">Lookup URL</button>
+        <button class="btn btn-ghost" id="risk-skip">Skip this step</button>
+        <button class="btn btn-ghost" id="risk-reset">Back to the threat model</button>
+      </div>
+      <details style="margin-top:10px"><summary>Layer JSON currently in scope</summary><textarea id="risk-json" class="jsonbox" readonly rows="8"></textarea></details>
+      <div id="risk-msg"></div>
+    </div>
+    <div id="risk-out" style="overflow:auto;max-height:640px"></div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p class="tech">
+      Built from public data extracted from cyllex.io/encyclopedia, with adversary
+      categories, Diamond Models and threat-intelligence layers published by the
+      Control Validation Compass project. Not affiliated with Cyllex or MITRE.
+    </p>
+    <p class="tech">
+      <b>Upstream:</b>
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">ControlCompass source</a> ·
+      <a href="https://github.com/laurovfigueiredo/apt-encyclopedia-replica" target="_blank" rel="noopener">this replica</a>
+    </p>
+  </div>
+</footer>
+
+<script src="heatmap.js?v=6"></script>
+<script src="knowledge.js?v=5"></script>
+<script src="spa.js?v=26"></script>
+</body>
+</html>

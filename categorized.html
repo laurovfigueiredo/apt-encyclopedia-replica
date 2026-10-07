@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APT Encyclopedia — Cyllex Replica</title>
+<title>APT Encyclopedia — Categorized Threats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,8 +16,8 @@
     <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
     <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model.</p>
     <nav class="nav">
-      <a href="index.html" class="active" aria-current="page">Overview</a>
-      <a href="categorized.html">Categorized Threats</a>
+      <a href="index.html">Overview</a>
+      <a href="categorized.html" class="active" aria-current="page">Categorized Threats</a>
       <a href="heatmap.html">ATT&amp;CK Heatmap</a>
       <a href="intel.html">Recent Intelligence</a>
       <a href="research.html">TTP Research &amp; Search</a>
@@ -33,34 +33,55 @@
 
 <main class="container">
 
-  <section id="overview" class="section">
-    <h2>Overview</h2>
-    <div class="stats-bar" id="stats-bar">
-      <div class="card stat"><div class="meta">Groups Tracked</div><div class="stat-num" data-stat="groups">—</div></div>
-      <div class="card stat"><div class="meta">Active Threats</div><div class="stat-num" data-stat="active">—</div></div>
-      <div class="card stat"><div class="meta">Total Campaigns</div><div class="stat-num" data-stat="campaigns">—</div></div>
-      <div class="card stat"><div class="meta">ATT&CK Techniques</div><div class="stat-num" data-stat="techniques">—</div></div>
-      <div class="card stat"><div class="meta">Intelligence Sources</div><div class="stat-num" data-stat="sources">—</div></div>
-      <div class="card stat"><div class="meta">Categorized Adversaries</div><div class="stat-num" data-stat="adversaries">—</div></div>
-      <div class="card stat"><div class="meta">Defensive Controls Mapped</div><div class="stat-num" data-stat="resources">—</div></div>
-    </div>
-  </section>
+  <section id="categorized" class="section">
+    <h2>Categorized Threats <span class="muted">(Motive, Location, Industry)</span></h2>
+    <p class="tech">Choose one or multiple criteria, then select a single adversary or threat category from the list. Selecting multiple criteria narrows the search.
+      Tick <b>select</b> next to individual adversaries to narrow it further.
+      <a href="https://youtu.be/fcFN1wxaihA" target="_blank" rel="noopener">Watch the feature tutorial ↗</a></p>
 
-  <section id="explore" class="section">
-    <h2>Explore by theme</h2>
-    <p class="tech">Each theme lives on its own page — pick one to dive in. Your threat-model scope and control-stack selection persist across pages.</p>
-    <div class="grid">
-      <a class="card res-card" href="categorized.html"><h3>Categorized Threats &rarr;</h3><p class="tech">Filter 117 adversaries by motive, industry, base and victim location.</p></a>
-      <a class="card res-card" href="heatmap.html"><h3>ATT&CK Heatmap &rarr;</h3><p class="tech">Navigator layer generated from the selected threat scope.</p></a>
-      <a class="card res-card" href="intel.html"><h3>Recent Intelligence &rarr;</h3><p class="tech">11 pre-computed report layers from the Compass authors.</p></a>
-      <a class="card res-card" href="research.html"><h3>TTP Research & Search &rarr;</h3><p class="tech">578 techniques with mapped controls, detections and tests.</p></a>
-      <a class="card res-card" href="controls.html"><h3>Lookup by Controls &rarr;</h3><p class="tech">Align your 27-provider control stack against ATT&CK.</p></a>
-      <a class="card res-card" href="alignment.html"><h3>Threat Alignment &rarr;</h3><p class="tech">Threat model vs control stack: technique-level gaps.</p></a>
-      <a class="card res-card" href="resources.html"><h3>Knowledge Center &rarr;</h3><p class="tech">Upstream projects, guide, and the dataset updater.</p></a>
-      <a class="card res-card" href="groups.html"><h3>APT Groups &rarr;</h3><p class="tech">Searchable threat-actor profiles with Diamond Model.</p></a>
-      <a class="card res-card" href="techniques.html"><h3>ATT&CK &rarr;</h3><p class="tech">Searchable technique catalog (MITRE ATT&CK).</p></a>
-      <a class="card res-card" href="model.html"><h3>Threat Model &rarr;</h3><p class="tech">Diamond Model of Intrusion Analysis + sources.</p></a>
+    <div class="filters">
+      <details class="filter-box" open>
+        <summary>Lookup by adversary motive</summary>
+        <input class="ac" id="ac-motive" type="search" placeholder="Autocomplete…" autocomplete="off">
+        <div class="chips" id="f-motive"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by victim industry</summary>
+        <input class="ac" id="ac-industry" type="search" placeholder="Autocomplete…" autocomplete="off">
+        <div class="chips" id="f-industry"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by adversary base <span class="muted">(where the group operates from)</span></summary>
+        <input class="ac" id="ac-base" type="search" placeholder="Autocomplete…" autocomplete="off">
+        <div class="chips" id="f-base"></div>
+      </details>
+
+      <details class="filter-box" open>
+        <summary>Lookup by victim location <span class="muted">(who the group targets)</span></summary>
+        <input class="ac" id="ac-country" type="search" placeholder="Autocomplete…" autocomplete="off">
+        <div class="chips" id="f-country"></div>
+      </details>
     </div>
+
+    <div class="toolbar">
+      <input type="text" id="cat-q" placeholder="Filter adversary list..." autocomplete="off">
+      <button class="btn" id="cat-clear">Clear all criteria</button>
+      <span class="stats">Or, select a relevant adversary / grouping from the following <b id="cat-total">0</b> option(s):</span>
+    </div>
+
+    <div class="review-panel" id="review"></div>
+
+    <div class="card">
+      <div id="cat-list" class="listbox"></div>
+    </div>
+
+    <p class="tech" style="margin-top:12px">
+      Tick <b>select</b> on individual adversaries to narrow the result further — the panel above
+      recomputes the effective scope live. Learn the workflow in the
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">Control Validation Compass source ↗</a>.
+    </p>
   </section>
 
 </main>

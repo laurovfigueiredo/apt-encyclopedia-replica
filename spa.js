@@ -5,6 +5,43 @@ const uniq = (a) => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompa
 
 let ACTORS = [], TECHS = [], CVC = [], INTEL = [];
 
+/* ---- cross-page scope persistence (localStorage) ---- */
+const SCOPE_KEY = 'encyc.scope.v1';
+function saveScope() {
+  try {
+    localStorage.setItem(SCOPE_KEY, JSON.stringify({
+      cat: { motive: [...CAT.motive], industry: [...CAT.industry], base: [...CAT.base], country: [...CAT.country] },
+      selected: [...HEATMAP.selected],
+      advSel: [...HEATMAP.advSel],
+      adversary: HEATMAP.selectedAdversary || '',
+      providers: (typeof KNOW !== 'undefined' && KNOW.sel) ? [...KNOW.sel] : [],
+    }));
+  } catch { /* private mode — non-fatal */ }
+}
+function loadScope() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(SCOPE_KEY) || 'null'); } catch { return; }
+  if (!s) return;
+  if (s.cat) {
+    ['motive', 'industry', 'base', 'country'].forEach((g) => (s.cat[g] || []).forEach((v) => CAT[g].add(v)));
+  }
+  (s.selected || []).forEach((v) => HEATMAP.selected.add(v));
+  (s.advSel || []).forEach((v) => HEATMAP.advSel.add(v));
+  if (s.adversary) HEATMAP.selectedAdversary = s.adversary;
+  if (Array.isArray(s.providers) && s.providers.length && typeof KNOW !== 'undefined' && KNOW.sel) {
+    KNOW.sel.clear();
+    s.providers.forEach((k) => KNOW.sel.add(k));
+  }
+}
+function syncFilterBoxes() {
+  const boxes = { motive: '#f-motive', industry: '#f-industry', base: '#f-base', country: '#f-country' };
+  Object.entries(boxes).forEach(([g, sel]) => {
+    const box = $(sel);
+    if (!box) return;
+    box.querySelectorAll('input[data-group]').forEach((i) => { i.checked = CAT[g].has(i.value); });
+  });
+}
+
 Promise.all([
   fetch('data/actors.json').then((r) => r.json()),
   fetch('data/techniques.json').then((r) => r.json()),
@@ -17,10 +54,12 @@ Promise.all([
   HEATMAP.cvc = cvc;
   buildCategories(cvc);
   initKnowledge(pages, ctrl);
+  loadScope();
   buildTacticFilters();
   buildKnowledgeTactics();
   renderStats();
   buildFilters();
+  syncFilterBoxes();
   buildHeatmapUI();
   buildIntelUI();
   renderCategories();
@@ -30,9 +69,18 @@ Promise.all([
   renderSources();
   bind();
   bindKnowledge();
+  if (typeof syncProviderBoxes === 'function') syncProviderBoxes();
   renderHeatmap();
   renderIntelList();
   renderRisk();
+}).catch((e) => {
+  const m = document.querySelector('main');
+  if (m) {
+    const d = document.createElement('p');
+    d.className = 'tag-warn';
+    d.textContent = `Could not load local datasets (data/*.json): ${e.message}. Serve via "python3 -m http.server" from the repo root.`;
+    m.prepend(d);
+  }
 });
 
 /* ---------------- overview ---------------- */
@@ -61,18 +109,20 @@ function chip(label, group) {
   return `<label class="chip"><input type="checkbox" data-group="${group}" value="${esc(label)}"><span>${esc(label)}</span></label>`;
 }
 
+function setHTML(sel, html) { const el = $(sel); if (el) el.innerHTML = html; }
+
 function buildFilters() {
-  $('#f-motive').innerHTML = uniq(CVC.flatMap((x) => x.motivation)).map((v) => chip(v, 'motive')).join('');
-  $('#f-industry').innerHTML = uniq(CVC.flatMap((x) => x.industries)).map((v) => chip(v, 'industry')).join('');
-  $('#f-base').innerHTML = uniq(CVC.map((x) => x.country)).map((v) => chip(v, 'base')).join('');
-  $('#f-country').innerHTML = uniq(CVC.flatMap((x) => x.victimCountries || [])).map((v) => chip(v, 'country')).join('');
+  setHTML('#f-motive', uniq(CVC.flatMap((x) => x.motivation)).map((v) => chip(v, 'motive')).join(''));
+  setHTML('#f-industry', uniq(CVC.flatMap((x) => x.industries)).map((v) => chip(v, 'industry')).join(''));
+  setHTML('#f-base', uniq(CVC.map((x) => x.country)).map((v) => chip(v, 'base')).join(''));
+  setHTML('#f-country', uniq(CVC.flatMap((x) => x.victimCountries || [])).map((v) => chip(v, 'country')).join(''));
 
   const gc = uniq(ACTORS.map((a) => a.country));
-  $('#groups-country').innerHTML = '<option value="">All countries</option>' + gc.map((c) => `<option>${esc(c)}</option>`).join('');
+  setHTML('#groups-country', '<option value="">All countries</option>' + gc.map((c) => `<option>${esc(c)}</option>`).join(''));
   const gt = uniq(ACTORS.map((a) => a.threatLevel));
-  $('#groups-threat').innerHTML = '<option value="">All threat levels</option>' + gt.map((c) => `<option>${esc(c)}</option>`).join('');
+  setHTML('#groups-threat', '<option value="">All threat levels</option>' + gt.map((c) => `<option>${esc(c)}</option>`).join(''));
   const tac = uniq(TECHS.map((t) => t.tactic).filter(Boolean));
-  $('#tech-tactic').innerHTML = '<option value="">All tactics</option>' + tac.map((c) => `<option>${esc(c)}</option>`).join('');
+  setHTML('#tech-tactic', '<option value="">All tactics</option>' + tac.map((c) => `<option>${esc(c)}</option>`).join(''));
 }
 
 function catMatch(x) {
@@ -86,13 +136,15 @@ function catMatch(x) {
 }
 
 function renderCategories() {
-  const q = $('#cat-q').value.trim().toLowerCase();
+  const box = $('#cat-list');
+  if (!box) return;
+  const q = ($('#cat-q')?.value || '').trim().toLowerCase();
   const res = CVC.filter(catMatch)
     .filter((x) => !q || (x.name || '').toLowerCase().includes(q))
     .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-  $('#cat-total').textContent = res.length;
-  const box = $('#cat-list');
+  const total = $('#cat-total');
+  if (total) total.textContent = res.length;
   if (!res.length) {
     box.innerHTML = '<p class="muted">No adversaries match selected criteria</p>';
     return;
@@ -130,7 +182,7 @@ function renderReview() {
   const advs = [...HEATMAP.advSel];
 
   // live resolution: individual picks narrow the criteria result further
-  const base = adversariesForScope('criteria', $('#hm-mode').value);
+  const base = adversariesForScope('criteria', $('#hm-mode')?.value || 'union');
   const eff = advs.length ? base.filter((x) => advs.includes(x.name)) : base;
   HEATMAP.effective = eff;
 
@@ -168,8 +220,10 @@ function renderReview() {
 
 /* ---------------- groups ---------------- */
 function renderGroups() {
-  const q = $('#groups-q').value.trim().toLowerCase();
-  const c = $('#groups-country').value, t = $('#groups-threat').value, s = $('#groups-status').value;
+  const grid = $('#groups-grid');
+  if (!grid) return;
+  const q = ($('#groups-q')?.value || '').trim().toLowerCase();
+  const c = $('#groups-country')?.value || '', t = $('#groups-threat')?.value || '', s = $('#groups-status')?.value || '';
 
   const res = ACTORS.filter((a) => {
     const hay = [a.name, (a.aliases || []).join(' '), (a.malware || []).join(' '), a.country,
@@ -182,8 +236,9 @@ function renderGroups() {
     return true;
   }).sort((a, b) => a.name.localeCompare(b.name));
 
-  $('#groups-count').textContent = `(${res.length})`;
-  $('#groups-grid').innerHTML = res.map((a) => `
+  const gc = $('#groups-count');
+  if (gc) gc.textContent = `(${res.length})`;
+  grid.innerHTML = res.map((a) => `
     <article class="card clickable" data-id="${esc(a.id)}">
       <h3>${esc(a.name)}</h3>
       ${a.aliases?.length ? `<div class="meta">Aliases: ${esc(a.aliases.slice(0, 5).join(', '))}${a.aliases.length > 5 ? '…' : ''}</div>` : ''}
@@ -198,8 +253,10 @@ function renderGroups() {
 
 /* ---------------- techniques ---------------- */
 function renderTechs() {
-  const q = $('#tech-q').value.trim().toLowerCase();
-  const tac = $('#tech-tactic').value;
+  const grid = $('#tech-grid');
+  if (!grid) return;
+  const q = ($('#tech-q')?.value || '').trim().toLowerCase();
+  const tac = $('#tech-tactic')?.value || '';
 
   const res = TECHS.filter((t) => {
     const hay = [t.id, t.name, t.tactic, (t.tactics || []).join(' '), (t.platforms || []).join(' '), (t.groups || []).join(' ')].join(' ').toLowerCase();
@@ -208,8 +265,9 @@ function renderTechs() {
     return true;
   }).sort((a, b) => a.id.localeCompare(b.id));
 
-  $('#tech-count').textContent = `(${res.length})`;
-  $('#tech-grid').innerHTML = res.map((t) => `
+  const tc = $('#tech-count');
+  if (tc) tc.textContent = `(${res.length})`;
+  grid.innerHTML = res.map((t) => `
     <article class="card">
       <h3><span class="mono">${esc(t.id)}</span> ${esc(t.name || '')}</h3>
       <div class="meta">
@@ -227,6 +285,7 @@ const TYPE_LABEL = { motive: 'Motive', industry: 'Industry', base: 'Adversary Ba
 
 function buildHeatmapUI() {
   const sel = $('#hm-category');
+  if (!sel) return;
   const groups = { motive: [], industry: [], base: [], victim: [] };
   HEATMAP.CATS.forEach((c) => groups[c.type].push(c));
   sel.innerHTML = '<option value="">— usar os critérios marcados acima —</option>' +
@@ -237,9 +296,9 @@ function buildHeatmapUI() {
 }
 
 function currentScope() {
-  const scope = $('#hm-scope').value;
-  const mode = $('#hm-mode').value;
-  const catId = $('#hm-category').value;
+  const scope = $('#hm-scope')?.value || 'criteria';
+  const mode = $('#hm-mode')?.value || 'union';
+  const catId = $('#hm-category')?.value || '';
   if (catId) {
     const cat = HEATMAP.BY_ID.get(catId);
     if (cat) return { adversaries: cat.adversaries, name: cat.id, desc: `All adversaries matching: ${cat.id}`, ids: [cat.id] };
@@ -271,6 +330,8 @@ function currentScope() {
 }
 
 function renderHeatmap() {
+  const meta = $('#hm-meta');
+  if (!meta) return;
   const { adversaries, name, desc, raw } = currentScope();
   const counts = tally(adversaries);
   const layer = raw || buildLayer(name, desc, counts);
@@ -280,7 +341,7 @@ function renderHeatmap() {
   const nameOf = (id) => TECHS.find((t) => t.id === id)?.name || '';
   const empty = adversaries.length === 0;
 
-  $('#hm-meta').innerHTML = `
+  meta.innerHTML = `
     <div class="row-main">
       <div class="row-title">${esc(layer.name)}</div>
       <div class="tech">${empty
@@ -291,8 +352,10 @@ function renderHeatmap() {
       ${top.map(([id, s]) => `<span class="badge" title="${esc(nameOf(id))}">${esc(id)} · ${s}</span>`).join('') || '<span class="muted">—</span>'}
     </div>`;
 
-  $('#hm-json').value = JSON.stringify(layer, null, 2);
-  $('#hm-frame').src = empty
+  const j = $('#hm-json');
+  if (j) j.value = JSON.stringify(layer, null, 2);
+  const f = $('#hm-frame');
+  if (f) f.src = empty
     ? 'https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack'
     : navigatorUrl(layer);
 }
@@ -363,35 +426,45 @@ function buildIntelUI() {
 }
 
 function renderIntelList() {
-  const q = $('#intel-q').value.trim().toLowerCase();
+  const list = $('#intel-list');
+  if (!list) return;
+  const qEl = $('#intel-q');
+  const q = (qEl?.value || '').trim().toLowerCase();
   const res = INTEL.filter((r) => !q || r.title.toLowerCase().includes(q));
-  $('#intel-list').innerHTML = res.map((r) => `
+  list.innerHTML = res.map((r) => `
     <label class="chip chip-report" data-id="${esc(r.id)}">
-      <input type="radio" name="intel" value="${esc(r.id)}" ${r.id === intelIndex.get($('#intel-q').dataset.sel)?.id ? 'checked' : ''}>
+      <input type="radio" name="intel" value="${esc(r.id)}" ${r.id === intelIndex.get(qEl?.dataset.sel)?.id ? 'checked' : ''}>
       <span>${esc(r.title)}</span>
     </label>`).join('') || '<p class="muted">No reports match that search.</p>';
-  $('#intel-list').dataset.count = res.length;
+  list.dataset.count = res.length;
 }
 
 async function loadIntel(forceId) {
+  const list = $('#intel-list');
+  if (!list) return;
   const id = forceId
-    || $('#intel-list').querySelector('input:checked')?.value
-    || $('#intel-list').querySelector('input')?.value
+    || list.querySelector('input:checked')?.value
+    || list.querySelector('input')?.value
     || INTEL[0]?.id;
   if (!id) return;
 
   const rec = intelIndex.get(id);
   if (!rec) return;
-  $('#intel-q').dataset.sel = id;
+  const qEl = $('#intel-q');
+  if (qEl) qEl.dataset.sel = id;
+  const meta = $('#intel-meta');
   try {
     const layer = await (await fetch(rec.file)).json();
     intelLayer = layer;
-    $('#intel-json').value = JSON.stringify(layer, null, 2);
-    $('#intel-frame').src = navigatorUrl(layer);
+    const j = $('#intel-json');
+    if (j) j.value = JSON.stringify(layer, null, 2);
+    const f = $('#intel-frame');
+    if (f) f.src = navigatorUrl(layer);
 
     const top = [...(layer.techniques || [])].sort((a, b) => b.score - a.score).slice(0, 12);
     const nameOf = (t) => TECHS.find((z) => z.id === t.techniqueID)?.name || '';
-    $('#intel-meta').innerHTML = `
+    if (!meta) return;
+    meta.innerHTML = `
       <div class="row-main">
         <div class="row-title">${esc(rec.title)}</div>
         <div class="tech"><b>${(layer.techniques || []).length}</b> técnicas · score máximo <b>${layer.gradient?.maxValue ?? 1}</b></div>
@@ -401,7 +474,7 @@ async function loadIntel(forceId) {
       </div>
       <p class="tech" style="margin:12px 0 0"><a href="${esc(rec.source)}" target="_blank" rel="noopener">Layer source ↗</a></p>`;
   } catch (e) {
-    $('#intel-meta').innerHTML = `<p class="muted">Could not load this layer: ${esc(e.message)}</p>`;
+    if (meta) meta.innerHTML = `<p class="muted">Could not load this layer: ${esc(e.message)}</p>`;
   }
 }
 
@@ -414,7 +487,9 @@ function renderSources() {
     map.get(r.publisher).push(r.url);
   }));
   const total = uniq([...map.keys()]);
-  $('#sources-list').innerHTML = `<div class="meta" style="margin-bottom:8px">${total.length} distinct publishers</div>` +
+  const box = $('#sources-list');
+  if (!box) return;
+  box.innerHTML = `<div class="meta" style="margin-bottom:8px">${total.length} distinct publishers</div>` +
     total.map((p) => `<span class="badge">${esc(p)}</span>`).join('');
 }
 
@@ -561,7 +636,8 @@ function openTtpPanel(mitreName) {
     $$('.tabpanel', $('#modal-body')).forEach((p) => p.classList.toggle('active', p.dataset.panel === t.dataset.tab));
   }));
 
-  $('#hm-scope').value = 'adversary';
+  const hmScope = $('#hm-scope');
+  if (hmScope) hmScope.value = 'adversary';
   renderHeatmap();
 }
 
@@ -571,18 +647,21 @@ function closeModal() {
 }
 
 /* ---------------- events ---------------- */
+/* on(): attach only when the element exists on this page (multi-page safe) */
+function on(sel, ev, fn) { const el = $(sel); if (el) el.addEventListener(ev, fn); }
+
 function bind() {
   setupAutocomplete('#ac-motive', '#f-motive', 'motive');
   setupAutocomplete('#ac-industry', '#f-industry', 'industry');
   setupAutocomplete('#ac-base', '#f-base', 'base');
   setupAutocomplete('#ac-country', '#f-country', 'country');
 
-  $('#f-motive').addEventListener('change', (e) => toggle(e, 'motive'));
-  $('#f-industry').addEventListener('change', (e) => toggle(e, 'industry'));
-  $('#f-base').addEventListener('change', (e) => toggle(e, 'base'));
-  $('#f-country').addEventListener('change', (e) => toggle(e, 'country'));
-  $('#cat-q').addEventListener('input', renderCategories);
-  $('#cat-clear').addEventListener('click', () => {
+  on('#f-motive', 'change', (e) => toggle(e, 'motive'));
+  on('#f-industry', 'change', (e) => toggle(e, 'industry'));
+  on('#f-base', 'change', (e) => toggle(e, 'base'));
+  on('#f-country', 'change', (e) => toggle(e, 'country'));
+  on('#cat-q', 'input', renderCategories);
+  on('#cat-clear', 'click', () => {
     $$('#categorized input[type=checkbox]').forEach((c) => (c.checked = false));
     Object.values(CAT).forEach((s) => s.clear());
     clearCriteria();
@@ -591,12 +670,13 @@ function bind() {
     renderReview();
     renderHeatmap();
     renderRisk();
+    saveScope();
   });
-  $('#cat-list').addEventListener('click', (e) => {
+  on('#cat-list', 'click', (e) => {
     const b = e.target.closest('[data-ttp]');
     if (b) openTtpPanel(b.dataset.ttp);
   });
-  $('#cat-list').addEventListener('change', (e) => {
+  on('#cat-list', 'change', (e) => {
     const b = e.target.closest('.adversary_select');
     if (!b) return;
     const name = b.dataset.name;
@@ -604,56 +684,64 @@ function bind() {
     renderReview();
     renderHeatmap();
     renderRisk();
+    saveScope();
   });
 
-  $('#hm-render').addEventListener('click', () => { renderHeatmap(); renderRisk(); });
-  $('#hm-scope').addEventListener('change', () => { renderHeatmap(); renderRisk(); });
-  $('#hm-mode').addEventListener('change', () => { renderHeatmap(); renderRisk(); renderReview(); });
-  $('#hm-category').addEventListener('change', () => { renderHeatmap(); renderRisk(); });
-  $('#hm-copy').addEventListener('click', async () => {
+  on('#hm-render', 'click', () => { renderHeatmap(); renderRisk(); });
+  on('#hm-scope', 'change', () => { renderHeatmap(); renderRisk(); });
+  on('#hm-mode', 'change', () => { renderHeatmap(); renderRisk(); renderReview(); saveScope(); });
+  on('#hm-category', 'change', () => { renderHeatmap(); renderRisk(); });
+  on('#hm-copy', 'click', async () => {
     const t = $('#hm-json');
+    if (!t) return;
     try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand('copy'); }
     flash($('#hm-copy'), 'Copiado!');
   });
-  $('#hm-download').addEventListener('click', () => {
-    const blob = new Blob([$('#hm-json').value], { type: 'application/json' });
+  on('#hm-download', 'click', () => {
+    const src = $('#hm-json');
+    if (!src) return;
+    const blob = new Blob([src.value], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${(HEATMAP.current?.name || 'layer').replace(/[^\w.-]+/g, '_')}_attack_layer.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   });
-  $('#hm-open').addEventListener('click', () => window.open(navigatorUrl(HEATMAP.current.layer), '_blank', 'noopener'));
+  on('#hm-open', 'click', () => { if (HEATMAP.current?.layer) window.open(navigatorUrl(HEATMAP.current.layer), '_blank', 'noopener'); });
 
-  $('#intel-q').addEventListener('input', renderIntelList);
-  $('#intel-load').addEventListener('click', loadIntel);
-  $('#intel-list').addEventListener('change', loadIntel);
-  $('#intel-copy').addEventListener('click', async () => {
+  on('#intel-q', 'input', renderIntelList);
+  on('#intel-load', 'click', () => loadIntel());
+  on('#intel-list', 'change', () => loadIntel());
+  on('#intel-copy', 'click', async () => {
     const t = $('#intel-json');
+    if (!t) return;
     try { await navigator.clipboard.writeText(t.value); } catch { t.select(); document.execCommand('copy'); }
     flash($('#intel-copy'), 'Copiado!');
   });
-  $('#intel-open').addEventListener('click', () => {
+  on('#intel-open', 'click', () => {
     if (intelLayer) window.open(navigatorUrl(intelLayer), '_blank', 'noopener');
   });
 
-  $('#groups-q').addEventListener('input', renderGroups);
-  ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => $(s).addEventListener('change', renderGroups));
-  $('#groups-grid').addEventListener('click', (e) => {
+  on('#groups-q', 'input', renderGroups);
+  ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => on(s, 'change', renderGroups));
+  on('#groups-grid', 'click', (e) => {
     const c = e.target.closest('[data-id]');
     if (c) openGroup(c.dataset.id);
   });
 
-  $('#tech-q').addEventListener('input', renderTechs);
-  $('#tech-tactic').addEventListener('change', renderTechs);
+  on('#tech-q', 'input', renderTechs);
+  on('#tech-tactic', 'change', renderTechs);
 
-  $('#modal-close').addEventListener('click', closeModal);
-  $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
+  on('#modal-close', 'click', closeModal);
+  on('#modal', 'click', (e) => { if (e.target.id === 'modal') closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+  // multi-page nav: links to *.html navigate normally; in-page #anchors smooth-scroll
   $$('nav.nav a').forEach((a) => a.addEventListener('click', (e) => {
+    const href = a.getAttribute('href') || '';
+    if (!href.startsWith('#')) return; // separate page — let the browser navigate
     e.preventDefault();
-    $(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
 }
 
@@ -665,9 +753,11 @@ function toggle(e, group) {
   renderReview();
   renderHeatmap();
   renderRisk();
+  saveScope();
 }
 
 function flash(btn, msg) {
+  if (!btn) return;
   const old = btn.textContent;
   btn.textContent = msg;
   setTimeout(() => (btn.textContent = old), 1200);

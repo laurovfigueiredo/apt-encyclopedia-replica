@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APT Encyclopedia — Cyllex Replica</title>
+<title>APT Encyclopedia — Recent Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,10 +16,10 @@
     <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
     <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model.</p>
     <nav class="nav">
-      <a href="index.html" class="active" aria-current="page">Overview</a>
+      <a href="index.html">Overview</a>
       <a href="categorized.html">Categorized Threats</a>
       <a href="heatmap.html">ATT&amp;CK Heatmap</a>
-      <a href="intel.html">Recent Intelligence</a>
+      <a href="intel.html" class="active" aria-current="page">Recent Intelligence</a>
       <a href="research.html">TTP Research &amp; Search</a>
       <a href="controls.html">Lookup by Controls</a>
       <a href="alignment.html">Threat Alignment</a>
@@ -33,34 +33,34 @@
 
 <main class="container">
 
-  <section id="overview" class="section">
-    <h2>Overview</h2>
-    <div class="stats-bar" id="stats-bar">
-      <div class="card stat"><div class="meta">Groups Tracked</div><div class="stat-num" data-stat="groups">—</div></div>
-      <div class="card stat"><div class="meta">Active Threats</div><div class="stat-num" data-stat="active">—</div></div>
-      <div class="card stat"><div class="meta">Total Campaigns</div><div class="stat-num" data-stat="campaigns">—</div></div>
-      <div class="card stat"><div class="meta">ATT&CK Techniques</div><div class="stat-num" data-stat="techniques">—</div></div>
-      <div class="card stat"><div class="meta">Intelligence Sources</div><div class="stat-num" data-stat="sources">—</div></div>
-      <div class="card stat"><div class="meta">Categorized Adversaries</div><div class="stat-num" data-stat="adversaries">—</div></div>
-      <div class="card stat"><div class="meta">Defensive Controls Mapped</div><div class="stat-num" data-stat="resources">—</div></div>
-    </div>
-  </section>
+  <section id="intel" class="section">
+    <h2>Recent Intelligence</h2>
+    <p class="tech">Pre-computed ATT&amp;CK Navigator heatmaps published by the Control Validation Compass authors, covering named threat-intelligence reports. Each layer's score is the number of observations of the technique in that report.</p>
 
-  <section id="explore" class="section">
-    <h2>Explore by theme</h2>
-    <p class="tech">Each theme lives on its own page — pick one to dive in. Your threat-model scope and control-stack selection persist across pages.</p>
-    <div class="grid">
-      <a class="card res-card" href="categorized.html"><h3>Categorized Threats &rarr;</h3><p class="tech">Filter 117 adversaries by motive, industry, base and victim location.</p></a>
-      <a class="card res-card" href="heatmap.html"><h3>ATT&CK Heatmap &rarr;</h3><p class="tech">Navigator layer generated from the selected threat scope.</p></a>
-      <a class="card res-card" href="intel.html"><h3>Recent Intelligence &rarr;</h3><p class="tech">11 pre-computed report layers from the Compass authors.</p></a>
-      <a class="card res-card" href="research.html"><h3>TTP Research & Search &rarr;</h3><p class="tech">578 techniques with mapped controls, detections and tests.</p></a>
-      <a class="card res-card" href="controls.html"><h3>Lookup by Controls &rarr;</h3><p class="tech">Align your 27-provider control stack against ATT&CK.</p></a>
-      <a class="card res-card" href="alignment.html"><h3>Threat Alignment &rarr;</h3><p class="tech">Threat model vs control stack: technique-level gaps.</p></a>
-      <a class="card res-card" href="resources.html"><h3>Knowledge Center &rarr;</h3><p class="tech">Upstream projects, guide, and the dataset updater.</p></a>
-      <a class="card res-card" href="groups.html"><h3>APT Groups &rarr;</h3><p class="tech">Searchable threat-actor profiles with Diamond Model.</p></a>
-      <a class="card res-card" href="techniques.html"><h3>ATT&CK &rarr;</h3><p class="tech">Searchable technique catalog (MITRE ATT&CK).</p></a>
-      <a class="card res-card" href="model.html"><h3>Threat Model &rarr;</h3><p class="tech">Diamond Model of Intrusion Analysis + sources.</p></a>
+    <div class="toolbar">
+      <label class="field" style="flex:1;min-width:260px">
+        <span>Report</span>
+        <input id="intel-q" type="search" placeholder="Search reports — e.g. LockBit, CISA, Ransomware…" autocomplete="off">
+      </label>
+      <button class="btn" id="intel-load">Load heatmap</button>
+      <button class="btn btn-ghost" id="intel-copy">Copiar JSON</button>
+      <button class="btn btn-ghost" id="intel-open">Abrir no Navigator</button>
     </div>
+
+    <div id="intel-list" class="chips chips-reports"></div>
+    <div id="intel-meta" class="card" style="padding:12px 14px;margin:14px 0"></div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <iframe id="intel-frame" title="ATT&CK Navigator" width="100%" height="760"
+              style="border:0;display:block;background:#fff"
+              src="https://mitre-attack.github.io/attack-navigator/#leave_site_dialog=false&domain=enterprise-attack"></iframe>
+    </div>
+
+    <details style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:600">ATT&amp;CK Navigator Layer (JSON)</summary>
+      <textarea id="intel-json" rows="12" readonly spellcheck="false"
+                style="width:100%;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:12px;background:#141418;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px"></textarea>
+    </details>
   </section>
 
 </main>

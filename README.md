@@ -1,21 +1,28 @@
 # APT Encyclopedia (Cyllex replica)
 
-Single-page static replica of the Cyllex APT Encyclopedia UI, built from publicly
+Static replica of the Cyllex APT Encyclopedia UI, built from publicly
 available data. Not affiliated with Cyllex.
 
-## Sections (all in one page)
+Each theme lives on its **own page** (URL per theme); `index.html` is the
+Overview hub with cards linking to the rest. The threat-model scope and the
+control-stack selection persist across pages via `localStorage`
+(`encyc.scope.v1`).
 
-- **Overview** — groups tracked, active threats, campaigns, ATT&CK techniques, intel sources, mapped defensive resources
-- **Categorized Threats** — filter adversaries by motive, victim industry, base and victim location; tick individual adversaries to narrow further, with a live **Selection Review** panel
-- **ATT&CK Navigator Heatmap** — generates an ATT&CK Navigator layer from the selected criteria
-- **Recent Intelligence** — 11 pre-computed adversary report layers
-- **TTP Research Knowledge Center** — all 578 ATT&CK techniques with their mapped policy/process controls, detection rules and offensive tests (D3FEND, CAR, Sigma, Splunk, Elastic, Microsoft Sentinel, Atomic Red Team, Stratus Red Team)
-- **Lookup by Controls** — toggle the 27 control/detection/testing providers you run and align every technique against what your stack actually covers, with sorting and tactic/level filters
-- **Threat Alignment Risk Workflow** — lines the threat model up against the control stack to surface technique-level detection gaps; includes the Trickbot worked example shipped with the Compass
-- **APT Groups** — search + filters (country, threat level, status), click for detail
-- **ATT&CK Techniques** — searchable technique catalog (401 techniques, MITRE ATT&CK v14)
-- **Knowledge Center** — the upstream projects and reference material
-- **Threat Model** — Diamond Model of Intrusion Analysis
+## Pages
+
+| Page | File | What it does |
+|---|---|---|
+| Overview | `index.html` | Group/adversary/technique stats + hub cards |
+| Categorized Threats | `categorized.html` | Filter 117 adversaries by motive, victim industry, base and victim location; tick individual adversaries; live **Selection Review** panel |
+| ATT&CK Heatmap | `heatmap.html` | ATT&CK Navigator layer from the selected scope (reads the scope built on Categorized Threats) |
+| Recent Intelligence | `intel.html` | 11 pre-computed adversary report layers |
+| TTP Research & Search | `research.html` | 578 ATT&CK techniques with mapped policy/process controls, detection rules and offensive tests (D3FEND, CAR, Sigma, Splunk, Elastic, Microsoft Sentinel, Atomic Red Team, Stratus Red Team) |
+| Lookup by Controls | `controls.html` | Toggle the 27 control/detection/testing providers; aligns every technique against the stack (saved for Threat Alignment) |
+| Threat Alignment | `alignment.html` | Threat model vs control stack → technique-level gaps; Trickbot worked example; bring-your-own layer via file upload or URL |
+| Knowledge Center | `resources.html` | Upstream guide (tutorials, general knowledge, FAQ, provider groups) + the dataset updater |
+| APT Groups | `groups.html` | Search + filters (country, threat level, status), click for detail |
+| ATT&CK | `techniques.html` | Searchable technique catalog (MITRE ATT&CK, refreshed via `tools/update_mitre.py`) |
+| Threat Model | `model.html` | Diamond Model of Intrusion Analysis + intelligence sources |
 
 ## ATT&CK Navigator heatmap
 
@@ -38,17 +45,50 @@ for APT1/APT28/APT29/APT41/FIN7/Turla are identical to the author's published fi
 python3 -m http.server 8080
 ```
 
-Open http://localhost:8080
+Open http://localhost:8080 — then navigate to any page above
+(e.g. http://localhost:8080/categorized.html).
 
 Data lives in `data/`:
 
 - `actors.json`, `techniques.json`, `cvc.json` — encyclopedia data
 - `intel/` — pre-computed report layers, including the Trickbot example
 - `controls.json` — 578 × 27 technique/provider coverage matrix
-- `technique_index.json` — light index (578 techniques, ~300 KB) loaded on boot
+- `technique_index.json` — light index loaded on boot
 - `technique_pages.json` — full per-technique detail (~2.7 MB), fetched on first open
+- `resources_guide.json` — upstream Knowledge Center guide (parsed from ControlCompass)
+- `attack_version.txt` — ATT&CK major version + release tag + refresh timestamp
+  (written by `tools/update_mitre.py`)
+- `last_update.txt` — last Compass refresh timestamp (written by `tools/exec_update.py`)
 
-Heatmap logic lives in `heatmap.js`; the purple-team sections live in `knowledge.js`.
+Heatmap logic lives in `heatmap.js`; the purple-team sections live in `knowledge.js`;
+page boot, filters and cross-page scope persistence live in `spa.js`.
+
+Shared layout (header/nav/footer/modal/scripts) is copied into each page —
+there is no build step. The nav marks the current page with
+`aria-current="page"`. When editing the header, replicate the change to all
+11 pages (or regenerate with `python3 tools/split_pages.py`).
+
+## Updating the datasets
+
+The **Check for dataset updates** button (Knowledge Center page) checks the
+live upstream — MITRE
+[attack-stix-data](https://github.com/mitre-attack/attack-stix-data/releases)
+releases and the latest ControlCompass commit — against the local bundle and
+tells you exactly what to run. The browser cannot rewrite `data/` by itself,
+so the actual update runs locally:
+
+```bash
+python3 tools/update_mitre.py --check-only   # compare versions, change nothing
+python3 tools/update_mitre.py                # refresh techniques from MITRE CTI
+python3 tools/exec_update.py                 # refresh the Compass layer too
+```
+
+`update_mitre.py` (stdlib only, no new dependencies) merges MITRE-owned fields
+into `data/techniques.json` and `data/technique_index.json`, preserving local
+fields (`usage`, `groups`) and Compass counts, writing `.bak` backups first
+and refusing to wipe on an empty bundle. It also bumps `ATTACK_VERSIONS` in
+`heatmap.js` and writes `data/attack_version.txt`.
+
 ## Adversary profile
 
 Clicking **TTPs** on any adversary opens a three-tab modal:
@@ -77,4 +117,5 @@ open-in-Navigator and a JSON view.
   [Categorized-Adversary-TTPs](https://github.com/tropChaud/Categorized-Adversary-TTPs) and
   [Cyber-Adversary-Heatmaps](https://github.com/tropChaud/Cyber-Adversary-Heatmaps).
 - Technique names, tactics, descriptions and platforms from
-  [MITRE ATT&CK v14](https://github.com/mitre-attack/attack-stix-data).
+  [MITRE ATT&CK](https://github.com/mitre-attack/attack-stix-data)
+  (local bundle version stamped in `data/attack_version.txt`).

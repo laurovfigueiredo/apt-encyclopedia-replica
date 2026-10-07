@@ -109,7 +109,7 @@ function initKnowledge(index, ctrl) {
   renderResources();
   loadGuide();
   (async()=>{try{const r=await fetch("data/last_update.txt"); if(r.ok){const el=$("#last-updated"); if(el) el.textContent=(await r.text()).trim();}}catch(e){}})();
-  loadGuide();
+  (async()=>{try{const r=await fetch("data/attack_version.txt"); if(r.ok){const el=$("#attack-version"); if(el) el.textContent=(await r.text()).split("\n")[0].trim();}}catch(e){}})();
 }
 
 /* ---------------- 1. TTP Research Knowledge Center ---------------- */
@@ -430,8 +430,17 @@ function renderRisk() {
   const sum = $('#risk-summary');
   if (!box || !sum) return;
 
-  // scope comes straight from the threat model above
-  const { adversaries, name } = currentScope();
+  // scope: custom uploaded/fetched layer wins, else straight from the threat model
+  const custom = (typeof window !== 'undefined' && window.RISK?.layer) || null;
+  const customName = (typeof window !== 'undefined' && window.RISK?.name) || 'Custom layer';
+  let adversaries, name;
+  if (custom) {
+    const ids = [...new Set((custom.techniques || []).map((t) => t.techniqueID).filter(Boolean))];
+    adversaries = [{ name: customName, ttps: ids }];
+    name = customName;
+  } else {
+    ({ adversaries, name } = currentScope());
+  }
   const techs = [...tally(adversaries).keys()];
 
   const sel = [...KNOW.sel];
@@ -497,6 +506,54 @@ function loadGuide() {
   return GUIDE.promise;
 }
 
+/* Render the upstream ControlCompass guide (resources_guide.json) into the
+   Knowledge Center placeholders. All guards are multi-page safe: no-ops
+   when the elements are absent. */
+function renderGuide(g) {
+  if (!g) return;
+  const intro = $('#res-intro');
+  if (intro && g.intro) intro.innerHTML = esc(g.intro);
+  const links = $('#res-links');
+  if (links) {
+    const secs = [];
+    if (g.tutorials?.items?.length) {
+      secs.push(`<h3 class="mt">Tutorials</h3><div class="badges">${g.tutorials.items.map((t) =>
+        `<a class="badge" href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.label || t.url)}</a>`).join('')}</div>`);
+    }
+    if (g.general?.items?.length) {
+      secs.push(`<h3 class="mt">General Knowledge</h3><div class="badges">${g.general.items.map((t) =>
+        `<a class="badge" href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.label || t.url)}</a>`).join('')}</div>`);
+    }
+    links.innerHTML = secs.join('') || '<p class="muted">No guide links available.</p>';
+  }
+  const faq = $('#res-faq');
+  if (faq) {
+    faq.innerHTML = (g.faq?.length)
+      ? `<h3 class="mt">Frequently Asked Questions</h3>` + g.faq.map((f) =>
+        `<details class="filter-box" style="margin-top:8px"><summary>${esc(f.q)}</summary>${
+          (f.a || []).map((p) => `<p class="tech">${linkify(p)}</p>`).join('')}</details>`).join('')
+      : '';
+  }
+  const guide = $('#res-guide');
+  if (guide) {
+    guide.innerHTML = (g.groups?.length)
+      ? g.groups.map((gr) =>
+        `<h3 class="mt">${esc(gr.title)}</h3>`
+        + (gr.updated ? `<p class="tech">Updated: ${esc(gr.updated)}</p>` : '')
+        + `<div class="kn-grid">${(gr.providers || []).map((p) =>
+          `<div class="card kn-provider"><div class="row-main"><div class="row-title">${
+            p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name || p.id || '')}</a>`
+                  : esc(p.name || p.id || '')}</div>`
+          + (p.overview ? `<div class="tech">${linkify(p.overview)}</div>` : '')
+          + (p.navigate ? `<div class="tech">${linkify(p.navigate)}</div>` : '')
+          + `<div class="tech">`
+          + [p.repoUpdated && `Repo updated: ${esc(p.repoUpdated)}`,
+             p.accessed && `Last accessed: ${esc(p.accessed)}`].filter(Boolean).join(' · ')
+          + `</div></div></div>`).join('')}</div>`).join('')
+      : '<p class="muted">No guide groups available.</p>';
+  }
+}
+
 const RESOURCES = [
   ['MITRE ATT&CK', 'Knowledge base of adversary tactics and techniques derived from real-world observations.', 'https://attack.mitre.org/'],
   ['MITRE D3FEND', 'Countermeasure knowledge base — a defensive counterpart to ATT&CK, indexed by technique.', 'https://d3fend.mitre.org/'],
@@ -560,25 +617,44 @@ function bindKnowledge() {
       e.target.checked ? KNOW.sel.add(k) : KNOW.sel.delete(k);
       renderMatrix();
       renderRisk();
+      if (typeof saveScope === 'function') saveScope();
     });
   }
-  $('#ctl-check').addEventListener('click', () => {
+  const onK = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };
+  onK('#ctl-check', 'click', () => {
     PROVIDERS.forEach(([k]) => KNOW.sel.add(k));
-    syncProviderBoxes(); renderMatrix(); renderRisk();
+    syncProviderBoxes(); renderMatrix(); renderRisk(); saveScope();
   });
-  $('#ctl-uncheck').addEventListener('click', () => {
+  onK('#ctl-uncheck', 'click', () => {
     KNOW.sel.clear();
-    syncProviderBoxes(); renderMatrix(); renderRisk();
+    syncProviderBoxes(); renderMatrix(); renderRisk(); saveScope();
   });
-  $('#ctl-apply').addEventListener('click', () => { renderMatrix(); renderRisk(); });
-  $('#ctl-lowest').addEventListener('change', (e) => {
+  onK('#ctl-apply', 'click', () => { renderMatrix(); renderRisk(); });
+  onK('#ctl-lowest', 'change', (e) => {
     KNOW.lowestOnly = e.target.checked;
     renderMatrix();
   });
-  $('#ctl-tactics').addEventListener('change', (e) => {
+  onK('#ctl-tactics', 'change', (e) => {
     const t = e.target.value;
     e.target.checked ? KNOW.tactics.add(t) : KNOW.tactics.delete(t);
     renderMatrix();
+  });
+  onK('#kn-id-go', 'click', () => {
+    const v = ($('#kn-id')?.value || '').trim();
+    const out = $('#kn-id-out');
+    if (!v) return;
+    if (!KNOW.byId.has(v)) {
+      if (out) out.innerHTML = `<p class="tag-warn">Unknown technique identifier: ${esc(v)}</p>`;
+      return;
+    }
+    if (out) out.innerHTML = '';
+    openTechnique(v);
+  });
+  onK('#kn-id-clear', 'click', () => {
+    const i = $('#kn-id');
+    if (i) i.value = '';
+    const out = $('#kn-id-out');
+    if (out) out.innerHTML = '';
   });
   $$('#ctl-sorts button').forEach((b) => b.addEventListener('click', () => {
     const [dir, key] = b.dataset.sort.split(':');
@@ -597,9 +673,83 @@ function bindKnowledge() {
     });
   });
 
-  $('#risk-trickbot').addEventListener('click', async () => {
+  /* Bring-your-own-layer controls: upload a Navigator layer file, fetch one
+     from a URL, skip the custom scope, or reset to the threat model. */
+  const RISK = { layer: null, name: '' };
+  if (typeof window !== 'undefined') window.RISK = RISK;
+  function riskLayer() { return (typeof window !== 'undefined' && window.RISK?.layer) || null; }
+  function setRiskMsg(html) { const m = $('#risk-msg'); if (m) m.innerHTML = html || ''; }
+  function renderRiskJson() {
+    const j = $('#risk-json');
+    if (!j) return;
+    const l = riskLayer();
+    j.value = l ? JSON.stringify(l, null, 2) : '';
+  }
+  onK('#risk-file', 'change', (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const layer = JSON.parse(String(rd.result || '{}'));
+        if (!layer || !Array.isArray(layer.techniques)) throw new Error('not a Navigator layer (missing techniques[])');
+        RISK.layer = layer;
+        RISK.name = f.name.replace(/\.json$/i, '');
+        setRiskMsg(`<p class="tech">Loaded <b>${esc(RISK.name)}</b> (${layer.techniques.length} techniques) from file.</p>`);
+        renderRiskJson();
+        renderRisk();
+      } catch (err) {
+        setRiskMsg(`<p class="tag-warn">Could not parse ${esc(f.name)}: ${esc(err.message)}</p>`);
+      }
+      e.target.value = '';
+    };
+    rd.readAsText(f);
+  });
+  onK('#risk-url-go', 'click', async () => {
+    const u = ($('#risk-url')?.value || '').trim();
+    if (!u) { setRiskMsg('<p class="tag-warn">Paste a layer URL first.</p>'); return; }
+    setRiskMsg('<p class="tech">Fetching layer…</p>');
+    try {
+      const r = await fetch(u);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const layer = await r.json();
+      if (!layer || !Array.isArray(layer.techniques)) throw new Error('not a Navigator layer (missing techniques[])');
+      RISK.layer = layer;
+      try { RISK.name = new URL(u, location.href).pathname.split('/').pop().replace(/\.json$/i, '') || u; }
+      catch { RISK.name = u; }
+      setRiskMsg(`<p class="tech">Loaded <b>${esc(RISK.name)}</b> (${layer.techniques.length} techniques) from URL.</p>`);
+      renderRiskJson();
+      renderRisk();
+    } catch (err) {
+      const offline = /Failed to fetch|NetworkError|CORS|CORS policy/i.test(err.message);
+      setRiskMsg(`<p class="tag-warn">${offline
+        ? 'Could not fetch that URL (CORS or offline). Download the file and use Upload instead.'
+        : `Could not load URL: ${esc(err.message)}`}</p>`);
+    }
+  });
+  onK('#risk-skip', 'click', () => {
+    RISK.layer = null; RISK.name = '';
+    setRiskMsg('<p class="tech">Custom layer cleared — showing the threat-model scope.</p>');
+    renderRiskJson();
+    renderRisk();
+  });
+  onK('#risk-reset', 'click', () => {
+    RISK.layer = null; RISK.name = '';
+    if (typeof HEATMAP !== 'undefined' && HEATMAP.example) HEATMAP.example = null;
+    const hmScope = $('#hm-scope');
+    if (hmScope) hmScope.value = 'criteria';
+    if (location.pathname.endsWith('alignment.html')) { renderHeatmap(); }
+    setRiskMsg('');
+    renderRiskJson();
+    renderRisk();
+  });
+  onK('#risk-trickbot', 'click', async () => {
     const btn = $('#risk-trickbot');
     btn.disabled = true;
+    // a custom uploaded layer takes precedence — clear it for the worked example
+    RISK.layer = null; RISK.name = '';
+    renderRiskJson();
+    setRiskMsg('');
     try {
       if (!HEATMAP.example) {
         const layer = await (await fetch('data/intel/trickbot.json')).json();
@@ -609,13 +759,16 @@ function bindKnowledge() {
           techniques: [...new Set((layer.techniques || []).map((t) => t.techniqueID))],
         };
       }
-      $('#hm-scope').value = 'example';
-      $('#hm-category').value = '';
+      const hmScope = $('#hm-scope');
+      if (hmScope) hmScope.value = 'example';
+      const hmCat = $('#hm-category');
+      if (hmCat) hmCat.value = '';
       renderHeatmap();
       renderRisk();
-      $('#risk-out').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      $('#risk-out')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
-      $('#risk-summary').innerHTML = `<p class="tag-warn">Could not load the example layer: ${esc(e.message)}</p>`;
+      const sum = $('#risk-summary');
+      if (sum) sum.innerHTML = `<p class="tag-warn">Could not load the example layer: ${esc(e.message)}</p>`;
     } finally {
       btn.disabled = false;
     }
@@ -630,7 +783,7 @@ function syncProviderBoxes() {
 
 function buildTacticFilters() {
   const box = $('#ctl-tactics');
-  if (!box) return;
+  if (!box) return; // off-page guard
   const tactics = uniq(KNOW.matrix.flatMap((t) => (t.tactics || '').split(/,\s*/)).filter(Boolean));
   box.innerHTML = tactics.map((t) => `<label class="chip">
     <input type="checkbox" value="${esc(t)}"><span>${esc(t)}</span></label>`).join('');
@@ -643,14 +796,130 @@ function buildKnowledgeTactics() {
   sel.innerHTML = '<option value="">All tactics</option>'
     + tactics.map((t) => `<option>${esc(t)}</option>`).join('');
 }
-async function updateAttackDatasets(){
-  const btn=$("#update-btn"), logEl=$("#update-log"), lastEl=$("#last-updated");
-  if(!btn)return;
-  btn.disabled=true;
-  if(logEl){logEl.style.display="block"; logEl.textContent="To run the full update locally:\n\n  python3 tools/exec_update.py\n\nParses upstream resources and refreshes datasets; commit and push to publish.\n";}
-  try{const r=await fetch("data/last_update.txt"); if(r.ok&&lastEl) lastEl.textContent=(await r.text()).trim();}catch(e){}
-  btn.disabled=false;
+/* ---------------- dataset updater (live upstream check) ----------------
+   Static hosting cannot rewrite data/*.json from the browser, so this
+   button does the honest half in-page: it checks MITRE ATT&CK
+   (attack-stix-data) and ControlCompass upstream for newer data, compares
+   with the local bundle, and tells the operator exactly what to run
+   locally when an update is available. Results are cached ~1h in
+   localStorage to stay clear of GitHub API rate limits. */
+const UPDATER = {
+  MITRE_RELEASE: 'https://api.github.com/repos/mitre-attack/attack-stix-data/releases/latest',
+  CVC_COMMIT: 'https://api.github.com/repos/ControlCompass/ControlCompass.github.io/commits?per_page=1',
+  CACHE_KEY: 'encyc.updater.v1',
+  CACHE_TTL: 3600e3, // 1h
+};
+
+async function fetchJsonTimeout(url, ms = 12000) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, headers: { Accept: 'application/vnd.github+json' } });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } finally {
+    clearTimeout(t);
+  }
 }
-$(document).addEventListener("DOMContentLoaded", ()=>{
-  $("#update-btn")?.addEventListener("click", updateAttackDatasets);
+
+function updaterCacheGet() {
+  try {
+    const c = JSON.parse(localStorage.getItem(UPDATER.CACHE_KEY) || 'null');
+    if (c && Date.now() - c.at < UPDATER.CACHE_TTL) return c.data;
+  } catch { /* private mode — non-fatal */ }
+  return null;
+}
+function updaterCacheSet(data) {
+  try { localStorage.setItem(UPDATER.CACHE_KEY, JSON.stringify({ at: Date.now(), data })); } catch { /* ignore */ }
+}
+
+function mitreTagToAttackVersion(tag) {
+  // attack-stix-data tags look like "v16.1" — we compare the major only
+  const m = String(tag || '').match(/(\d+)/);
+  return m ? m[1] : null;
+}
+
+async function checkUpstream() {
+  const cached = updaterCacheGet();
+  if (cached) return { ...cached, cached: true };
+  const [rel, commits] = await Promise.all([
+    fetchJsonTimeout(UPDATER.MITRE_RELEASE),
+    fetchJsonTimeout(UPDATER.CVC_COMMIT).catch(() => null), // Compass check is best-effort
+  ]);
+  const data = {
+    mitreTag: rel.tag_name || rel.name || '',
+    mitreVersion: mitreTagToAttackVersion(rel.tag_name || rel.name),
+    mitreUrl: rel.html_url || 'https://github.com/mitre-attack/attack-stix-data/releases',
+    cvcSha: commits?.[0]?.sha?.slice(0, 7) || '',
+    cvcDate: commits?.[0]?.commit?.committer?.date || '',
+    cvcUrl: commits?.[0]?.html_url || 'https://github.com/ControlCompass/ControlCompass.github.io/commits',
+  };
+  updaterCacheSet(data);
+  return { ...data, cached: false };
+}
+
+async function updateAttackDatasets() {
+  const btn = $('#update-btn'), logEl = $('#update-log'),
+        statusEl = $('#update-status'), lastEl = $('#last-updated');
+  if (!btn) return;
+  btn.disabled = true;
+  if (logEl) { logEl.style.display = 'block'; logEl.textContent = 'Checking MITRE ATT&CK and ControlCompass upstream…'; }
+
+  let localTs = '';
+  try {
+    const r = await fetch('data/last_update.txt');
+    if (r.ok) { localTs = (await r.text()).trim(); if (lastEl) lastEl.textContent = localTs; }
+  } catch { /* served offline — non-fatal */ }
+
+  const localVer = (typeof ATTACK_VERSIONS !== 'undefined' && ATTACK_VERSIONS.attack) || '?';
+  try {
+    const up = await checkUpstream();
+    const mitreNew = up.mitreVersion && String(localVer) !== String(up.mitreVersion);
+    const lines = [
+      `Local bundle : ATT&CK v${localVer} (refreshed ${localTs || 'unknown'})`,
+      `Upstream MITRE: ATT&CK v${up.mitreVersion || '?'} (${up.mitreTag || 'unknown tag'})`,
+      `  ${up.mitreUrl}`,
+      up.cvcSha
+        ? `Upstream Compass: ${up.cvcSha} (${up.cvcDate || 'no date'})\n  ${up.cvcUrl}`
+        : 'Upstream Compass: commits API unreachable (offline or rate-limited).',
+      '',
+    ];
+    if (mitreNew) {
+      lines.push(
+        'UPDATE AVAILABLE — this page cannot rewrite data/*.json by itself.',
+        'To update locally, run from the repo root:',
+        '',
+        '  python3 tools/update_mitre.py   # refresh techniques from MITRE CTI',
+        '  python3 tools/exec_update.py    # refresh the Compass layer too',
+        '',
+        'Then commit data/* and reload this page.',
+      );
+      if (statusEl) statusEl.innerHTML = `Update available: local v${esc(localVer)} → upstream v${esc(up.mitreVersion)}${up.cached ? ' (cached check)' : ''} — see log.`;
+    } else {
+      lines.push('Up to date: local ATT&CK bundle matches the latest upstream release.');
+      if (!up.cvcSha) lines.push('Note: Compass check skipped (API unreachable) — re-run online to confirm.');
+      if (statusEl) statusEl.textContent = `Up to date (ATT&CK v${localVer}${up.cached ? ', cached check' : ''}). Last refresh: ${localTs || '—'}.`;
+    }
+    if (logEl) logEl.textContent = lines.join('\n');
+  } catch (e) {
+    const offline = e.name === 'AbortError' || /Failed to fetch|NetworkError/i.test(e.message);
+    if (logEl) {
+      logEl.textContent = [
+        offline
+          ? 'Could not reach github.com / api.github.com (offline, blocked network, or rate-limited).'
+          : `Upstream check failed: ${e.message}`,
+        '',
+        'To check/update locally instead, run from the repo root:',
+        '',
+        '  python3 tools/update_mitre.py --check-only',
+        '  python3 tools/update_mitre.py',
+      ].join('\n');
+    }
+    if (statusEl) statusEl.textContent = 'Upstream check failed — see log for the offline procedure.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  $('#update-btn')?.addEventListener('click', updateAttackDatasets);
 });
