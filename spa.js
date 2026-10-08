@@ -240,14 +240,16 @@ function renderGroups() {
   if (gc) gc.textContent = `(${res.length})`;
   grid.innerHTML = res.map((a) => `
     <article class="card clickable" data-id="${esc(a.id)}">
-      <h3>${esc(a.name)}</h3>
+      <h3><a href="actor.html?id=${esc(a.id)}" data-actor-link style="color:inherit;text-decoration:none">${esc(a.name)} ↗</a></h3>
       ${a.aliases?.length ? `<div class="meta">Aliases: ${esc(a.aliases.slice(0, 5).join(', '))}${a.aliases.length > 5 ? '…' : ''}</div>` : ''}
       <div class="badges">
         ${a.country ? `<span class="badge">${esc(a.country)}</span>` : ''}
         ${a.threatLevel ? `<span class="badge badge-${esc(String(a.threatLevel).toLowerCase())}">${esc(a.threatLevel)}</span>` : ''}
         <span class="badge">${a.active ? 'Active' : 'Inactive'}</span>
         <span class="badge">${(a.techniques || []).length} TTPs</span>
+        ${a.campaigns ? `<span class="badge">${esc(String(a.campaigns))} campaigns</span>` : ''}
       </div>
+      <div class="tech" style="margin-top:8px"><a href="actor.html?id=${esc(a.id)}" data-actor-link>View full profile →</a></div>
     </article>`).join('') || '<p class="muted">No groups match the filters.</p>';
 }
 
@@ -725,6 +727,9 @@ function bind() {
   on('#groups-q', 'input', renderGroups);
   ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => on(s, 'change', renderGroups));
   on('#groups-grid', 'click', (e) => {
+    // dedicated profile page wins; modal stays as quick view via middle-click-safe link
+    const link = e.target.closest('a[data-actor-link]');
+    if (link) return; // let the browser navigate to actor.html
     const c = e.target.closest('[data-id]');
     if (c) openGroup(c.dataset.id);
   });

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APT Encyclopedia — Actor Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=27">
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <h1 class="logo">Cyllex <span class="muted">APT Encyclopedia</span></h1>
+    <p class="sub">Threat actor profiles, ATT&CK techniques, categorized threats and Diamond Model.</p>
+    <nav class="nav">
+      <a href="index.html">Overview</a>
+      <a href="categorized.html">Categorized Threats</a>
+      <a href="heatmap.html">ATT&amp;CK Heatmap</a>
+      <a href="intel.html">Recent Intelligence</a>
+      <a href="research.html">TTP Research &amp; Search</a>
+      <a href="controls.html">Lookup by Controls</a>
+      <a href="alignment.html">Threat Alignment</a>
+      <a href="resources.html">Knowledge Center</a>
+      <a href="groups.html" class="active" aria-current="page">APT Groups</a>
+      <a href="techniques.html">ATT&CK</a>
+      <a href="model.html">Threat Model</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section id="actor" class="section">
+    <p class="tech"><a href="groups.html">&larr; All groups</a></p>
+    <div id="actor-body"><p class="muted">Loading actor profile…</p></div>
+  </section>
+</main>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p class="tech">
+      Built from public data extracted from cyllex.io/encyclopedia, with adversary
+      categories, Diamond Models and threat-intelligence layers published by the
+      Control Validation Compass project. Not affiliated with Cyllex or MITRE.
+    </p>
+    <p class="tech">
+      <b>Data:</b>
+      <a href="data/cvc.json" target="_blank" rel="noopener">adversaries (json)</a> ·
+      <a href="data/techniques.json" target="_blank" rel="noopener">techniques (json)</a> ·
+      <a href="data/actors.json" target="_blank" rel="noopener">groups (json)</a>
+    </p>
+    <p class="tech">
+      <b>Upstream:</b>
+      <a href="https://github.com/ControlCompass/ControlCompass.github.io" target="_blank" rel="noopener">ControlCompass source</a> ·
+      <a href="https://github.com/laurovfigueiredo/apt-encyclopedia-replica" target="_blank" rel="noopener">this replica</a>
+    </p>
+  </div>
+</footer>
+
+<script src="heatmap.js?v=6"></script>
+<script src="knowledge.js?v=5"></script>
+<script src="spa.js?v=26"></script>
+<script src="actor.js?v=1"></script>
+</body>
+</html>
