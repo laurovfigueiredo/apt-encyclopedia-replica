@@ -727,11 +727,12 @@ function bind() {
   on('#groups-q', 'input', renderGroups);
   ['#groups-country', '#groups-threat', '#groups-status'].forEach((s) => on(s, 'change', renderGroups));
   on('#groups-grid', 'click', (e) => {
-    // dedicated profile page wins; modal stays as quick view via middle-click-safe link
-    const link = e.target.closest('a[data-actor-link]');
-    if (link) return; // let the browser navigate to actor.html
+    // cards navigate to the dedicated profile page; the modal stays
+    // available only via explicit "quick view" affordances (none by default)
     const c = e.target.closest('[data-id]');
-    if (c) openGroup(c.dataset.id);
+    if (!c) return;
+    if (e.target.closest('a')) return; // real links navigate normally
+    location.href = `actor.html?id=${encodeURIComponent(c.dataset.id)}`;
   });
 
   on('#tech-q', 'input', renderTechs);

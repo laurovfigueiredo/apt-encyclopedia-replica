@@ -56,8 +56,32 @@
         ${facts.map(([k, v]) => `<div class="fact"><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}
       </dl>
 
+      ${(() => {
+        const yr = (d) => { const m = String(d || '').match(/(\d{4})/); return m ? parseInt(m[1], 10) : 9999; };
+        const items = [];
+        (ops || []).forEach((o) => items.push({ date: o.year || '—', y: yr(o.year), title: o.name || 'Operation', desc: o.summary || '', kind: 'op' }));
+        (posts || []).forEach((p) => items.push({ date: p.publishedDate || '—', y: yr(p.publishedDate), title: p.title || '', desc: p.summary || '', url: p.path ? `https://cyllex.io${p.path}` : null, kind: 'post' }));
+        items.sort((x, y) => x.y - y.y);
+        if (a.firstSeen) items.unshift({ date: a.firstSeen, y: yr(a.firstSeen), title: 'First observed activity', desc: '', kind: 'start' });
+        if (a.lastSeen && a.lastSeen !== a.firstSeen) items.push({ date: a.lastSeen, y: yr(a.lastSeen), title: 'Last observed activity', desc: '', kind: 'end' });
+        if (!items.length) return '';
+        const dot = (k) => k === 'start' ? 'var(--green)' : k === 'end' ? 'var(--red)' : k === 'post' ? 'var(--accent)' : 'var(--amber)';
+        return `
+      <h3 class="mt">Activity Timeline</h3>
+      <div style="border-left:2px solid var(--border);margin:12px 0 0 8px">
+        ${items.map((it) => `<div style="display:flex;gap:12px;margin:0 0 14px 0">
+          <div style="flex-shrink:0;width:12px;height:12px;border-radius:50%;background:${dot(it.kind)};margin:4px 0 0 -7px;border:2px solid var(--panel)"></div>
+          <div style="min-width:0">
+            <div class="meta" style="margin-bottom:2px">${esc(it.date)}</div>
+            <div class="row-title" style="font-size:14px">${it.url ? `<a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a>` : esc(it.title)}</div>
+            ${it.desc ? `<div class="tech" style="margin-top:4px">${esc(it.desc.length > 280 ? it.desc.slice(0, 280) + '…' : it.desc)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+      </div>`;
+      })()}
+
       ${(a.industries?.length || a.targetSectors?.length || a.victimCountries?.length) ? `
-      <h3 class="mt">Targeting</h3>
+      <h3 class="mt">Target Sectors</h3>
       <div class="badges">
         ${(a.targetSectors || []).map((x) => `<span class="badge">sector: ${esc(x)}</span>`).join('')}
         ${(a.industries || []).map((x) => `<span class="badge">industry: ${esc(x)}</span>`).join('')}
@@ -73,7 +97,7 @@
       ${prof.attribution ? `<p class="tech"><b>Attribution:</b> ${esc(prof.attribution)}</p>` : ''}` : ''}
 
       ${a.malware?.length ? `
-      <h3 class="mt">Malware &amp; Tools (${a.malware.length})</h3>
+      <h3 class="mt">Associated Malware (${a.malware.length})</h3>
       <div class="badges">${a.malware.map((x) => `<span class="badge">${esc(x)}</span>`).join('')}</div>` : ''}
 
       ${ops.length ? `
@@ -158,7 +182,7 @@
         ${p.summary ? `<p class="tech">${esc(p.summary)}</p>` : ''}
       </div>`).join('')}` : ''}
 
-      ${refs.length ? `<h3 class="mt">Intelligence Sources (${refs.length})</h3>
+      ${refs.length ? `<h3 class="mt">Reports &amp; Advisories (${refs.length})</h3>
         <div class="techlist">${refs.slice(0, 40).map((r) => `<div class="techitem">
           <div class="mono">${esc(r.publisherType || r.type || '')}</div>
           <div><b>${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title || r.url)}</a>` : esc(r.title || '')}</b>

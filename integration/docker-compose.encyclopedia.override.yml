@@ -1,0 +1,8 @@
+# Override somente-aditivo para o SOC-OS v2.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.encyclopedia.override.yml up -d frontend
+# Não edita o compose original: só monta a enciclopédia READ-ONLY no nginx do frontend.
+# Rollback: subir sem este arquivo (docker compose up -d frontend).
+services:
+  frontend:
+    volumes:
+      - ../apt-encyclopedia-replica:/usr/share/nginx/html/encyclopedia:ro
